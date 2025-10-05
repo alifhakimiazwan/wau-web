@@ -10,6 +10,12 @@
 !.yarn/releases
 !.yarn/versions
 
+supabase/.branches
+supabase/.temp
+
+# Types (optional - some people commit this)
+types/database.types.ts
+
 # testing
 /coverage
 
