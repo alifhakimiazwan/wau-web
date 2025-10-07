@@ -1,38 +1,83 @@
-import { updateSession } from '@/lib/supabase/middleware'
+import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import type { CookieOptions } from '@supabase/ssr'
 
 export async function middleware(request: NextRequest) {
-  // Update session
-  const { response, supabase } = await updateSession(request)
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
-  // Get pathname
-  const pathname = request.nextUrl.pathname
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          })
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+          })
+        },
+      },
+    }
+  )
 
-  // Public routes that don't need auth
-  const publicRoutes = ['/', '/login', '/signup', '/forgot-password']
-  const isPublicRoute = publicRoutes.includes(pathname)
-
-  // Store routes (public)
-  const isStoreRoute = pathname.startsWith('/') && !pathname.startsWith('/dashboard')
-
-  // Auth routes
-  const isAuthRoute = ['/login', '/signup'].includes(pathname)
-
-  // Protected routes
-  const isProtectedRoute = pathname.startsWith('/dashboard') ||
-                          pathname.startsWith('/onboarding')
-
-  // Check if user is authenticated
+  // Refresh session if expired
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Redirect authenticated users away from auth pages
-  if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
+  const pathname = request.nextUrl.pathname
 
-  // Redirect unauthenticated users to login
+  // Define route types
+  const publicRoutes = ['/', '/login', '/signup', '/forgot-password', '/auth/callback']
+  const authRoutes = ['/login', '/signup']
+  const protectedRoutes = ['/dashboard', '/onboarding']
+
+  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  const isAuthRoute = authRoutes.includes(pathname)
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route))
+
+  // ⭐ RULE 1: Protect routes - redirect to login if not authenticated
   if (isProtectedRoute && !user) {
     return NextResponse.redirect(new URL('/login', request.url))
+  }
+
+  // ⭐ RULE 2: Redirect authenticated users away from auth pages
+  // Let the guards handle where they should go (dashboard or onboarding)
+  if (isAuthRoute && user) {
+    return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 
   return response

@@ -1,33 +1,16 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { redirect } from "next/navigation";
 import { OnboardingForm } from "@/components/onboarding-form";
 import { BackgroundBeams } from "@/components/ui/shadcn-io/background-beams";
+import { OnboardingToast } from "@/components/onboarding-toast";
+import { preventCompletedOnboarding } from "@/lib/guards/onboarding-guard";
 
-export default async function OnboardingPage() {
-  const supabase = await createServerSupabaseClient();
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ confirmed?: string }>;
+}) {
+  const params = await searchParams;
+  const { user } = await preventCompletedOnboarding();
 
-  // Check if user is authenticated
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  // Check if user already has a store
-  const { data: store } = await supabase
-    .from("stores")
-    .select("id, slug")
-    .eq("user_id", user.id)
-    .single();
-
-  if (store) {
-    // User already completed onboarding
-    redirect("/dashboard");
-  }
-
-  // Get user's full name from metadata
   const userName = user.user_metadata?.full_name || "";
 
   return (
@@ -36,6 +19,7 @@ export default async function OnboardingPage() {
       <div className="relative z-10 w-full max-w-md">
         <OnboardingForm userName={userName} />
       </div>
+      <OnboardingToast confirmed={params.confirmed === "true"} />
     </div>
   );
 }
