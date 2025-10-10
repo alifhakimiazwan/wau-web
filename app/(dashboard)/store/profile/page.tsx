@@ -18,9 +18,9 @@ export default async function ProfilePage() {
     .order("position", { ascending: true });
 
   return (
-    <div className="space-y-6 max-w-xl ">
+    <div className="space-y-6 w-full p-6">
       {/* Header */}
-      <div className="flex items-center gap-4 pt-3 ml-4">
+      <div className="flex items-center gap-4">
         <Button variant="ghost" size="icon" asChild>
           <Link href="/store">
             <ArrowLeft className="h-4 w-4" />

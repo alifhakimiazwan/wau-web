@@ -12,14 +12,8 @@ import {
   DropzoneContent,
   DropzoneEmptyState,
 } from "@/components/ui/shadcn-io/dropzone";
-
-interface ImageUploadProps {
-  currentImageUrl?: string | null;
-  onUploadCompleteAction: (url: string) => void;
-  type: "avatar" | "banner";
-  storeName?: string;
-  storeSlug: string;
-}
+import { getInitials } from "@/lib/profile/actions";
+import { ImageUploadProps } from "@/lib/image/types";
 
 export function ImageUpload({
   currentImageUrl,
@@ -34,32 +28,18 @@ export function ImageUpload({
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const getInitials = () => {
-    if (storeName) {
-      return storeName
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    return storeSlug[0].toUpperCase();
-  };
-
   const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // ✅ Validate file type
     const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!validTypes.includes(file.type)) {
       toast.error("Please select a JPG, PNG, or WebP image");
       return;
     }
 
-    // ✅ Validate file size (max 10MB before compression)
     if (file.size > 10 * 1024 * 1024) {
       toast.error("Image must be less than 10MB");
       return;
@@ -68,7 +48,6 @@ export function ImageUpload({
     setIsUploading(true);
 
     try {
-      // ✅ Compress and resize image
       const targetSize = type === "avatar" ? 400 : 1200;
       const compressedFile = await compressImage(file, {
         maxWidth: targetSize,
@@ -76,7 +55,6 @@ export function ImageUpload({
         quality: 0.8,
       });
 
-      // Show preview immediately
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewUrl(reader.result as string);
@@ -167,7 +145,7 @@ export function ImageUpload({
               className="object-cover"
             />
             <AvatarFallback className="text-2xl font-semibold">
-              {getInitials()}
+              {getInitials(storeName)}
             </AvatarFallback>
           </Avatar>
 

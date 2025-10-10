@@ -4,22 +4,12 @@ import { useState, useTransition } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import {
-  IconBrandFacebook,
-  IconBrandInstagram,
-  IconBrandTwitter,
-  IconBrandLinkedin,
-  IconBrandYoutube,
-  IconBrandTiktok,
-  IconBrandGithub,
-  IconBrandDiscord,
-  IconMail,
-  IconWorld,
-} from "@tabler/icons-react";
 import { Loader2, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database.types";
+import { getSocialIcon } from "@/lib/preview/actions";
+import { getPlaceholder } from "@/lib/profile/actions";
 
 type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
 
@@ -29,44 +19,6 @@ interface SocialLinkItemProps {
   platformLabel: string;
   existingLink?: SocialLink;
 }
-
-// Get icon for platform
-const getPlatformIcon = (platform: string) => {
-  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    facebook: IconBrandFacebook,
-    instagram: IconBrandInstagram,
-    twitter: IconBrandTwitter,
-    linkedin: IconBrandLinkedin,
-    youtube: IconBrandYoutube,
-    tiktok: IconBrandTiktok,
-    github: IconBrandGithub,
-    discord: IconBrandDiscord,
-    gmail: IconMail,
-    portfolio: IconWorld,
-    other: IconWorld,
-  };
-
-  return iconMap[platform.toLowerCase()] || IconWorld;
-};
-
-// Get placeholder for platform
-const getPlaceholder = (platform: string) => {
-  const placeholders: Record<string, string> = {
-    instagram: "https://instagram.com/yourhandle",
-    twitter: "https://twitter.com/yourhandle",
-    tiktok: "https://tiktok.com/@yourhandle",
-    youtube: "https://youtube.com/@yourhandle",
-    facebook: "https://facebook.com/yourpage",
-    linkedin: "https://linkedin.com/in/yourprofile",
-    github: "https://github.com/yourusername",
-    discord: "https://discord.gg/yourinvite",
-    gmail: "your@email.com",
-    portfolio: "https://yourwebsite.com",
-    other: "https://...",
-  };
-
-  return placeholders[platform] || "https://...";
-};
 
 export function SocialLinkItem({
   storeId,
@@ -79,7 +31,7 @@ export function SocialLinkItem({
   const [isSaved, setIsSaved] = useState(false);
   const router = useRouter();
 
-  const Icon = getPlatformIcon(platform);
+  const Icon = getSocialIcon(platform);
   const placeholder = getPlaceholder(platform);
 
   const handleSave = async () => {

@@ -127,3 +127,5 @@ interface CompressImageOptions {
       reader.readAsDataURL(file);
     });
   }
+
+  

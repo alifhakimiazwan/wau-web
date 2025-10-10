@@ -14,12 +14,11 @@ import {
   IconBrandDiscord,
   IconMail,
   IconWorld,
-  IconMapPin,
-  IconPhone,
   IconPencil,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import type { Database } from "@/types/database.types";
+import { getInitials } from "@/lib/profile/actions";
 
 type Store = Database["public"]["Tables"]["stores"]["Row"];
 type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
@@ -49,20 +48,6 @@ const getSocialIcon = (platform: string) => {
 };
 
 export function ProfileCard({ store, socialLinks = [] }: ProfileCardProps) {
-  // Get initials from name
-  const getInitials = () => {
-    if (store.name) {
-      return store.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2);
-    }
-    return store.slug[0].toUpperCase();
-  };
-
-  // Sort social links by position
   const sortedSocialLinks = [...socialLinks].sort(
     (a, b) => (a.position || 0) - (b.position || 0)
   );
@@ -94,7 +79,7 @@ export function ProfileCard({ store, socialLinks = [] }: ProfileCardProps) {
               className="object-cover"
             />
             <AvatarFallback className="text-lg font-semibold rounded-3xl">
-              {getInitials()}
+              {getInitials(store.name)}
             </AvatarFallback>
           </Avatar>
         </div>
