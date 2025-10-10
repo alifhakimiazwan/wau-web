@@ -22,7 +22,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Check, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { Typography } from "./ui/typography";
+import { Typography } from "../ui/typography";
 import Image from "next/image";
 
 interface OnboardingFormProps extends React.ComponentProps<"div"> {

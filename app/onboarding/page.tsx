@@ -1,6 +1,6 @@
-import { OnboardingForm } from "@/components/onboarding-form";
+import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 import { BackgroundBeams } from "@/components/ui/shadcn-io/background-beams";
-import { OnboardingToast } from "@/components/onboarding-toast";
+import { OnboardingToast } from "@/components/onboarding/onboarding-toast";
 import { preventCompletedOnboarding } from "@/lib/guards/onboarding-guard";
 
 export default async function OnboardingPage({
