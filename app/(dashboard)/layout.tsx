@@ -29,7 +29,7 @@ export default async function DashboardLayout({
       <SidebarInset>
         <SiteHeader />
 
-        <main>{children}</main>
+        <main className="w-full">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

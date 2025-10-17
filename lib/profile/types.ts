@@ -11,6 +11,7 @@ import {
     IconWorld,
   } from "@tabler/icons-react";
 import type { Database } from "@/types/database.types";
+import { ButtonStyle } from "../design/buttonTypes";
 
 export interface StorefrontPreviewProps {
     name: string;
@@ -25,15 +26,22 @@ export interface StorefrontPreviewProps {
     theme?: string;
     fontFamily?: string;
     blockShape?: string;
+    colors?: {
+      primary: string
+      accent: string
+    }
+    buttonConfig?: ButtonStyle
   }
 
 
 export type Store = Database["public"]["Tables"]["stores"]["Row"];
 export type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
+export type StoreCustomization = Database["public"]["Tables"]["store_customization"]["Row"];
 
 export interface ProfileFormProps {
   store: Store;
   socialLinks: SocialLink[];
+  customization?: StoreCustomization | null;
 }
 
   // Available platforms

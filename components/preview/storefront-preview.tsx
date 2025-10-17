@@ -1,17 +1,18 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Typography } from "@/components/ui/typography";
-import {
-  getSocialIcon,
-  getThemeClasses,
-  getBlockShape,
-} from "@/lib/preview/actions";
-import { IconMapPin } from "@tabler/icons-react";
-import { getInitials } from "@/lib/profile/actions";
-import { cn } from "@/lib/utils";
-import { StorefrontPreviewProps } from "@/lib/profile/types";
 import { memo } from "react";
+import { LucideBadgeCheck } from "lucide-react";
+import { IconMapPin } from "@tabler/icons-react";
+import { Typography } from "@/components/ui/typography";
+import { cn } from "@/lib/utils";
+import { getSocialIcon } from "@/lib/preview/actions";
+import { getInitials } from "@/lib/profile/actions";
+import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/buttonTypes";
+import { ThemedAvatar } from "../design/theme-avatar";
+import { ButtonPreviewMockup } from "../design/mock-button";
+import { HeroStorefrontPreview } from "./hero-storefront-preview";
+import { usePreviewTheme, useValidLinks } from "./hooks";
+import type { StorefrontPreviewProps } from "./types";
 
 export const StorefrontPreview = memo(function StorefrontPreview({
   name,
@@ -22,104 +23,127 @@ export const StorefrontPreview = memo(function StorefrontPreview({
   socialLinks,
   theme = "minimal_white",
   fontFamily = "Inter",
-  blockShape = "round",
+  blockShape = "rounded",
+  colors,
+  buttonConfig = DEFAULT_BUTTON_CONFIG,
 }: StorefrontPreviewProps) {
-  // Filter out empty URLs
-  const validLinks = socialLinks.filter((link) => link.url.trim());
+  const validLinks = useValidLinks(socialLinks);
+  const {
+    themeConfig,
+    primaryColor,
+    accentColor,
+    textColor,
+    validBlockShape,
+    borderRadiusClass,
+  } = usePreviewTheme({ theme, blockShape, colors });
+
+  // Use hero layout if theme specifies it
+  if (themeConfig?.layout === 'hero') {
+    return (
+      <HeroStorefrontPreview
+        name={name}
+        bio={bio}
+        location={location}
+        profilePicUrl={profilePicUrl}
+        bannerPicUrl={bannerPicUrl}
+        socialLinks={socialLinks}
+        theme={theme}
+        fontFamily={fontFamily}
+        blockShape={blockShape}
+        colors={colors}
+        buttonConfig={buttonConfig}
+      />
+    );
+  }
 
   return (
     <div
-      className={cn(
-        "min-h-full transition-all duration-300",
-        getThemeClasses(theme)
-      )}
-      style={{ fontFamily }}
+      className={cn("min-h-full transition-all duration-300")}
+      style={{
+        fontFamily,
+        backgroundColor: primaryColor,
+        color: textColor,
+      }}
     >
-      {/* Banner */}
       {bannerPicUrl && (
         <div className="w-full h-32 relative">
           <img
             src={bannerPicUrl}
             alt="Banner"
             className="w-full h-full object-cover"
+            loading="lazy"
           />
         </div>
       )}
 
-      {/* Content */}
       <div className="px-6 py-6 space-y-6">
-        {/* Profile Section */}
-        <div className="flex flex-col items-center text-center space-y-3">
-          {/* Avatar */}
-          <Avatar
-            className={cn(
-              "h-24 w-24 border-4",
-              theme?.includes("white") ? "border-white" : "border-gray-900"
-            )}
-          >
-            <AvatarImage src={profilePicUrl || undefined} alt={name} />
-            <AvatarFallback className="text-xl font-semibold">
-              {getInitials({ name })}
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex flex-col items-center text-center space-y-2">
+          <div className="relative">
+            <ThemedAvatar
+              src={profilePicUrl || undefined}
+              alt={name}
+              fallback={getInitials(name)}
+              avatarConfig={themeConfig?.avatar}
+              blockShape={validBlockShape}
+              accentColor={accentColor}
+            />
+          </div>
 
-          {/* Name */}
+          {/* Name with verified badge (like images) */}
           {name && (
-            <Typography variant="h3" className="font-bold">
-              {name}
-            </Typography>
+            <div className="flex items-center gap-2">
+              <Typography variant="h3" className="font-bold">
+                {name}
+              </Typography>
+              <LucideBadgeCheck className="text-blue-500"></LucideBadgeCheck>
+            </div>
           )}
 
-          {/* Bio */}
           {bio && (
             <Typography variant="small" className="opacity-90 max-w-xs">
               {bio}
             </Typography>
           )}
 
-          {/* Location */}
           {location && (
             <div className="flex items-center gap-1.5 text-sm opacity-80">
               <IconMapPin className="h-4 w-4" />
               <span>{location}</span>
             </div>
           )}
+          {validLinks.length > 0 && (
+            <div className="flex items-center justify-center gap-4 flex-wrap">
+              {validLinks.map((link, index) => {
+                const Icon = getSocialIcon(link.platform);
+
+                return (
+                  <a
+                    key={index}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "p-2 transition-all hover:scale-110",
+                      borderRadiusClass
+                    )}
+                    aria-label={`Visit ${link.platform}`}
+                  >
+                    <Icon className="h-6 w-6" />
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Social Links */}
-        {validLinks.length > 0 && (
-          <div className="space-y-3">
-            {validLinks.map((link, index) => {
-              const Icon = getSocialIcon(link.platform);
-              return (
-                <div
-                  key={index}
-                  className={cn(
-                    "w-full p-4 flex items-center justify-center gap-3 transition-all",
-                    getBlockShape(blockShape),
-                    theme?.includes("white")
-                      ? "bg-gray-100 text-gray-900"
-                      : "bg-white/10 backdrop-blur-sm"
-                  )}
-                >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium capitalize">
-                    {link.platform}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <ButtonPreviewMockup
+          buttonConfig={buttonConfig}
+          blockShape={blockShape}
+          buttonEffect={themeConfig?.buttonEffect}
+          accentColor={accentColor}
+          fontFamily={fontFamily}
+        />
 
-        {/* Empty State */}
-        {validLinks.length === 0 && (
-          <div className="text-center py-12 opacity-50">
-            <Typography variant="small">No links added yet</Typography>
-          </div>
-        )}
-
-        {/* Powered by */}
         <div className="text-center pt-6 opacity-40">
           <Typography variant="small" className="text-xs">
             Powered by Wau.bio

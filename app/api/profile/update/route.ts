@@ -1,6 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { z } from 'zod'
+import { z, ZodError } from 'zod'
 
 const updateProfileSchema = z.object({
   name: z.string().min(2),
@@ -119,10 +119,10 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Profile update error:', error)
-    
-    if (error.name === 'ZodError') {
+
+    if (error instanceof ZodError) {
       return NextResponse.json(
         { success: false, error: error.errors[0].message },
         { status: 400 }

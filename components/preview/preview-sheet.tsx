@@ -1,34 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Eye } from "lucide-react";
 import { IPhoneMockup } from "./device-mockup";
 import { StorefrontPreview } from "./storefront-preview";
+import type { StorefrontPreviewProps } from "./types";
 
-interface PreviewSheetProps {
-  name: string;
-  bio?: string;
-  location?: string;
-  profilePicUrl?: string;
-  bannerPicUrl?: string;
-  socialLinks: Array<{
-    platform: string;
-    url: string;
-  }>;
-  theme?: string;
-  fontFamily?: string;
-  blockShape?: string;
-}
-
-export function PreviewSheet(props: PreviewSheetProps) {
+export function PreviewSheet(props: StorefrontPreviewProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -42,10 +21,6 @@ export function PreviewSheet(props: PreviewSheetProps) {
         </Button>
       </SheetTrigger>
       <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
-        <SheetHeader className="pb-4">
-          <SheetTitle>Live Preview</SheetTitle>
-        </SheetHeader>
-
         {/* Center the mockup */}
         <div className="flex justify-center pb-8">
           <div className="scale-90 origin-top">

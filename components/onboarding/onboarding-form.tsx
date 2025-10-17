@@ -81,8 +81,8 @@ export function OnboardingForm({
           setError("root", { message: result.error });
           toast.error(result.error);
         }
-      } catch (error: any) {
-        if (error.message !== "NEXT_REDIRECT") {
+      } catch (error) {
+        if (error instanceof Error && error.message !== "NEXT_REDIRECT") {
           setError("root", { message: "An unexpected error occurred" });
           toast.error("An unexpected error occurred");
         }

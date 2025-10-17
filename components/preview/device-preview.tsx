@@ -2,25 +2,9 @@
 
 import { IPhoneMockup } from "./device-mockup";
 import { StorefrontPreview } from "./storefront-preview";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Typography } from "@/components/ui/typography";
+import type { StorefrontPreviewProps } from "./types";
 
-interface DevicePreviewProps {
-  name: string;
-  bio?: string;
-  location?: string;
-  profilePicUrl?: string;
-  bannerPicUrl?: string;
-  socialLinks: Array<{
-    platform: string;
-    url: string;
-  }>;
-  theme?: string;
-  fontFamily?: string;
-  blockShape?: string;
-}
-
-export function DevicePreview(props: DevicePreviewProps) {
+export function DevicePreview(props: StorefrontPreviewProps) {
   return (
     <IPhoneMockup>
       <StorefrontPreview {...props} />

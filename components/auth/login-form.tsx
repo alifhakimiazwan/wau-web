@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { login, loginWithGithub } from "@/lib/auth/actions";
+import { login } from "@/lib/auth/actions";
 import { loginSchema, type LoginFormData } from "@/lib/validations/auth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,11 +16,11 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, Info } from "lucide-react"; // ⭐ Add icons
+import { Loader2, AlertCircle, Info } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-interface LoginFormProps extends React.ComponentProps<"form"> {}
+type LoginFormProps = React.ComponentProps<"form">;
 
 export function LoginForm({ className, ...props }: LoginFormProps) {
   const [isPending, startTransition] = useTransition();
@@ -46,8 +46,8 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
         if (!result.success && result.error) {
           setError("root", { message: result.error });
         }
-      } catch (error: any) {
-        if (error.message !== "NEXT_REDIRECT") {
+      } catch (error) {
+        if (error instanceof Error && error.message !== "NEXT_REDIRECT") {
           const errorMessage = error.message || "An unexpected error occurred";
           setError("root", { message: errorMessage });
           toast.error(errorMessage);
@@ -60,21 +60,13 @@ export function LoginForm({ className, ...props }: LoginFormProps) {
   //   startTransition(async () => {
   //     try {
   //       await loginWithGithub()
-  //     } catch (error: any) {
-  //       if (error.message !== 'NEXT_REDIRECT') {
+  //     } catch (error) {
+  //       if (error instanceof Error && error.message !== 'NEXT_REDIRECT') {
   //         toast.error('Failed to login with GitHub')
   //       }
   //     }
   //   })
   // }
-
-  // ⭐ Determine error type for better styling
-  const getErrorVariant = (errorMessage: string) => {
-    if (errorMessage.includes("confirm your email")) {
-      return "info"; // Use info variant for email confirmation
-    }
-    return "destructive"; // Use destructive for actual errors
-  };
 
   return (
     <form

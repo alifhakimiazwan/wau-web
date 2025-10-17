@@ -1,15 +1,15 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Check, X } from "lucide-react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import type { Database } from "@/types/database.types";
 import { getSocialIcon } from "@/lib/preview/actions";
 import { getPlaceholder } from "@/lib/profile/actions";
+import { SAVED_INDICATOR_DELAY } from "./constants";
+import { useSocialLinkMutation } from "./hooks/useSocialLinkMutation";
 
 type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
 
@@ -27,9 +27,15 @@ export function SocialLinkItem({
   existingLink,
 }: SocialLinkItemProps) {
   const [url, setUrl] = useState(existingLink?.url || "");
-  const [isPending, startTransition] = useTransition();
   const [isSaved, setIsSaved] = useState(false);
-  const router = useRouter();
+
+  const { saveSocialLink, deleteSocialLink, isPending } = useSocialLinkMutation({
+    platformLabel,
+    onSuccess: () => {
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), SAVED_INDICATOR_DELAY);
+    },
+  });
 
   const Icon = getSocialIcon(platform);
   const placeholder = getPlaceholder(platform);
@@ -43,61 +49,21 @@ export function SocialLinkItem({
       return;
     }
 
-    startTransition(async () => {
-      try {
-        const response = await fetch("/api/social-links/upsert", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            storeId,
-            platform,
-            url: url.trim(),
-            handle: extractHandle(url.trim()),
-          }),
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          setIsSaved(true);
-          toast.success(`${platformLabel} link saved!`);
-          router.refresh();
-
-          // Reset saved indicator after 2 seconds
-          setTimeout(() => setIsSaved(false), 2000);
-        } else {
-          toast.error(result.error || "Failed to save link");
-        }
-      } catch (error) {
-        toast.error("Failed to save link");
-      }
+    await saveSocialLink({
+      storeId,
+      platform,
+      url: url.trim(),
+      handle: extractHandle(url.trim()),
     });
   };
 
   const handleDelete = async () => {
     if (!existingLink) return;
 
-    startTransition(async () => {
-      try {
-        const response = await fetch("/api/social-links/delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: existingLink.id }),
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-          setUrl("");
-          toast.success(`${platformLabel} link removed`);
-          router.refresh();
-        } else {
-          toast.error(result.error || "Failed to delete link");
-        }
-      } catch (error) {
-        toast.error("Failed to delete link");
-      }
-    });
+    const success = await deleteSocialLink(existingLink.id);
+    if (success) {
+      setUrl("");
+    }
   };
 
   // Extract handle from URL

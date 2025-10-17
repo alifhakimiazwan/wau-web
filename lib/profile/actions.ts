@@ -17,7 +17,7 @@ export const getPlaceholder = (platform: string) => {
     return placeholders[platform] || "https://...";
   };
 
-export const getInitials = ({name}) => {
+export const getInitials = (name) => {
     if (name) {
       return name
         .split(" ")

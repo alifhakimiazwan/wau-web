@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
 import { TextEffect } from "@/components/ui/text-effect";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { HeroHeader } from "./header";
@@ -48,8 +47,7 @@ export default function HeroSection() {
                 <TextEffect
                   preset="fade-in-blur"
                   speedSegment={0.2}
-                  as="h1"
-                  className="mt-8 max-w-2xl text-balance text-5xl font-medium md:text-6xl lg:mt-16"
+                  className="mt-8 max-w-2xl text-balance text-6xl font-regular font-serif md:text-6xl lg:mt-16"
                 >
                   Meet Your All-in-One
                 </TextEffect>
@@ -57,7 +55,7 @@ export default function HeroSection() {
                   preset="fade-in-blur"
                   speedSegment={0.2}
                   as="h1"
-                  className="max-w-2xl text-balance text-5xl font-semibold text-blue-700 font-serif italic md:text-7xl"
+                  className="max-w-2xl text-balance text-5xl font-regular font-serif md:text-7xl"
                 >
                   Creator Store
                 </TextEffect>
@@ -67,7 +65,7 @@ export default function HeroSection() {
                   speedSegment={0.3}
                   delay={0.5}
                   as="p"
-                  className="mt-4 max-w-md  text-muted-foreground text-md"
+                  className="mt-4 max-w-md font-sans  text-muted-foreground text-md"
                 >
                   Wau is the easiest way to make money online. All of your
                   courses, digital products, and bookings are now hosted within

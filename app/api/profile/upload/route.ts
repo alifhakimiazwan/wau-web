@@ -8,7 +8,6 @@ export async function POST(request: Request) {
   try {
     const supabase = await createServerSupabaseClient()
     
-    // ✅ Authenticate user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     
     if (userError || !user) {
@@ -17,8 +16,6 @@ export async function POST(request: Request) {
         { status: 401 }
       )
     }
-
-    // ✅ Parse form data
     const formData = await request.formData()
     const file = formData.get('file') as File
     const type = formData.get('type') as 'avatar' | 'banner'
@@ -47,7 +44,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // ✅ Delete old image if exists
     if (oldImageUrl) {
       try {
         const oldPath = extractPathFromUrl(oldImageUrl)
@@ -58,21 +54,18 @@ export async function POST(request: Request) {
         }
       } catch (error) {
         console.warn('Failed to delete old image:', error)
-        // Continue anyway - not critical
       }
     }
 
-    // ✅ Create file path
     const fileExt = file.name.split('.').pop()
     const fileName = `${type}-${Date.now()}.${fileExt}`
     const folderPath = type === 'avatar' ? 'avatars' : 'banners'
     const filePath = `${folderPath}/${user.id}/${fileName}`
 
-    // ✅ Upload to storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('user-uploads')
       .upload(filePath, file, {
-        cacheControl: '31536000', // 1 year
+        cacheControl: '31536000', 
         upsert: false,
       })
 
@@ -94,7 +87,7 @@ export async function POST(request: Request) {
       url: publicUrl,
       path: filePath,
     })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Image upload error:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -126,7 +119,6 @@ export async function DELETE(request: Request) {
       )
     }
 
-    // Extract path from URL
     const path = extractPathFromUrl(imageUrl)
     if (!path) {
       return NextResponse.json(
@@ -135,7 +127,6 @@ export async function DELETE(request: Request) {
       )
     }
 
-    // Verify user owns this image
     if (!path.includes(user.id)) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
@@ -143,7 +134,6 @@ export async function DELETE(request: Request) {
       )
     }
 
-    // Delete from storage
     const { error: deleteError } = await supabase.storage
       .from('user-uploads')
       .remove([path])
@@ -157,7 +147,7 @@ export async function DELETE(request: Request) {
     }
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Image delete error:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
@@ -166,7 +156,6 @@ export async function DELETE(request: Request) {
   }
 }
 
-// Helper: Extract storage path from public URL
 function extractPathFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url)

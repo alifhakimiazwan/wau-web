@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { Instrument_Serif } from "next/font/google";
+import { DM_Sans } from "next/font/google";
+import localFont from "next/font/local";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const DMSans = DM_Sans({
+  variable: "--font-dm-sans",
   subsets: ["latin"],
 });
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  weight: "400",
-  subsets: ["latin"],
+const myFont = localFont({
+  src: [
+    {
+      path: "../public/fonts/Stratford-Serial Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-myfont", // your custom CSS variable
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -32,9 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased`}
-      >
+      <body className={`${myFont.variable} ${DMSans.variable} antialiased`}>
         {children}
         <Toaster />
       </body>

@@ -3,71 +3,75 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StoreDetailsTab } from "@/components/store/store-details-tab";
 import { StoreDesignTab } from "@/components/store/store-design-tab";
-import { DevicePreview } from "@/components/preview/device-preview";
 
 interface StorePageProps {
-  searchParams: {
+  searchParams: Promise<{
     tab?: string;
-  };
+  }>;
 }
 
 export default async function StorePage({ searchParams }: StorePageProps) {
+  const params = await searchParams;
   const { user, store } = await requireStore();
   const supabase = await createServerSupabaseClient();
 
-  // Fetch social links
-  const { data: socialLinks } = await supabase
-    .from("social_links")
-    .select("*")
-    .eq("store_id", store.id)
-    .order("position", { ascending: true });
+  // Fetch data in parallel for better performance
+  const [{ data: socialLinks }, { data: customization }] = await Promise.all([
+    supabase
+      .from("social_links")
+      .select("*")
+      .eq("store_id", store.id)
+      .order("position", { ascending: true }),
+    supabase
+      .from("store_customization")
+      .select("*")
+      .eq("store_id", store.id)
+      .maybeSingle(),
+  ]);
 
-  // Get tab from URL or default to 'details'
-  const activeTab = searchParams.tab || "details";
+  const activeTab = params.tab || "details";
+
+  // Prepare initial design
+  const initialDesign = customization
+    ? {
+        themeId: customization.theme || "minimal_white",
+        fontFamily: customization.font_family || "Inter",
+        colors: {
+          primary: customization.primary_color || "#000000",
+          accent: customization.accent_color || "#3B82F6",
+        },
+        blockShape:
+          (customization.block_shape as "square" | "rounded" | "pill") ||
+          "rounded",
+        buttonConfig: {
+          style: (customization.button_style as "filled" | "outlined" | "ghost") || "filled",
+        },
+      }
+    : undefined;
 
   return (
-    <div className="flex gap-6 p-5 w-full">
-      <div className="flex-1 max-w-4xl">
-        {/* Tabs */}
-        <Tabs defaultValue={activeTab} className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="details">My Store</TabsTrigger>
-            <TabsTrigger value="design">Edit Design</TabsTrigger>
-          </TabsList>
+    <div className="space-y-6 p-5">
+      <Tabs defaultValue={activeTab} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="details">My Store</TabsTrigger>
+          <TabsTrigger value="design">Edit Design</TabsTrigger>
+        </TabsList>
 
-          {/* My Store Tab */}
-          <TabsContent value="details" className="space-y-4">
-            <StoreDetailsTab store={store} socialLinks={socialLinks || []} />
-          </TabsContent>
+        {/* My Store Tab */}
+        <TabsContent value="details" className="space-y-4">
+          <StoreDetailsTab store={store} socialLinks={socialLinks || []} />
+        </TabsContent>
 
-          {/* Edit Design Tab */}
-          <TabsContent value="design" className="space-y-4">
-            <StoreDesignTab store={store} />
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Fixed Device Preview on the Right */}
-      <div className="hidden xl:block w-[420px] flex-shrink-0">
-        <div className="sticky top-[calc(var(--header-height)+1.5rem)]">
-          <DevicePreview
-            name={store.name || ""}
-            bio={store.bio}
-            location={store.location}
-            profilePicUrl={store.profile_pic_url}
-            bannerPicUrl={store.banner_pic_url}
-            socialLinks={
-              socialLinks?.map((link) => ({
-                platform: link.platform,
-                url: link.url,
-              })) || []
-            }
-            theme="minimal_white"
-            fontFamily="Inter"
-            blockShape="round"
+        {/* Edit Design Tab */}
+        <TabsContent value="design" className="space-y-4">
+          {/* ✅ Pass data only, no functions */}
+          <StoreDesignTab
+            store={store}
+            socialLinks={socialLinks || []}
+            initialDesign={initialDesign}
           />
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

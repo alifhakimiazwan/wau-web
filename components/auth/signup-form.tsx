@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod"; // ⭐ ADD THIS
 import { useForm } from "react-hook-form"; // ⭐ ADD THIS
 
-interface SignupFormProps extends React.ComponentProps<"form"> {}
+type SignupFormProps = React.ComponentProps<"form">;
 
 export function SignupForm({ className, ...props }: SignupFormProps) {
   const [isPending, startTransition] = useTransition();

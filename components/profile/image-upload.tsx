@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { IconPencil, IconUpload, IconTrash } from "@tabler/icons-react";
-import { toast } from "sonner";
 import { Loader2, X } from "lucide-react";
-import { compressImage } from "@/lib/image/image";
 import {
   Dropzone,
   DropzoneContent,
@@ -14,6 +12,8 @@ import {
 } from "@/components/ui/shadcn-io/dropzone";
 import { getInitials } from "@/lib/profile/actions";
 import { ImageUploadProps } from "@/lib/image/types";
+import { IMAGE_UPLOAD } from "./constants";
+import { useImageUpload } from "./hooks/useImageUpload";
 
 export function ImageUpload({
   currentImageUrl,
@@ -22,117 +22,22 @@ export function ImageUpload({
   storeName,
   storeSlug,
 }: ImageUploadProps) {
-  const [isUploading, setIsUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(
-    currentImageUrl || null
-  );
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const {
+    isUploading,
+    previewUrl,
+    fileInputRef,
+    handleFileSelect,
+    handleDrop,
+    removeImage,
+    triggerFileSelect,
+  } = useImageUpload({
+    type,
+    currentImageUrl,
+    onUploadComplete: onUploadCompleteAction,
+  });
 
-  const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-    if (!validTypes.includes(file.type)) {
-      toast.error("Please select a JPG, PNG, or WebP image");
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("Image must be less than 10MB");
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      const targetSize = type === "avatar" ? 400 : 1200;
-      const compressedFile = await compressImage(file, {
-        maxWidth: targetSize,
-        maxHeight: type === "avatar" ? 400 : 400,
-        quality: 0.8,
-      });
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewUrl(reader.result as string);
-      };
-      reader.readAsDataURL(compressedFile);
-
-      // ✅ Upload via API route (server-side)
-      const formData = new FormData();
-      formData.append("file", compressedFile);
-      formData.append("type", type);
-      formData.append("oldImageUrl", currentImageUrl || "");
-
-      const response = await fetch("/api/profile/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Upload failed");
-      }
-
-      // Update with server URL
-      setPreviewUrl(result.url);
-      onUploadCompleteAction(result.url);
-
-      toast.success(
-        `${type === "avatar" ? "Profile picture" : "Banner"} uploaded!`
-      );
-    } catch (error: any) {
-      console.error("Upload error:", error);
-      toast.error(error.message || "Failed to upload image");
-
-      // Revert preview on error
-      setPreviewUrl(currentImageUrl || null);
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
-  const handleRemove = async () => {
-    if (!currentImageUrl) return;
-
-    setIsUploading(true);
-    try {
-      const response = await fetch("/api/profile/upload", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: currentImageUrl, type }),
-      });
-
-      const result = await response.json();
-
-      if (!result.success) {
-        throw new Error(result.error || "Delete failed");
-      }
-
-      setPreviewUrl(null);
-      onUploadCompleteAction("");
-
-      toast.success(
-        `${type === "avatar" ? "Profile picture" : "Banner"} removed`
-      );
-    } catch (error: any) {
-      console.error("Remove error:", error);
-      toast.error(error.message || "Failed to remove image");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleButtonClick = () => {
-    fileInputRef.current?.click();
-  };
+  // Banner files state - must be at top level (React Hooks rule)
+  const [bannerFiles, setBannerFiles] = useState<File[] | undefined>(undefined);
 
   if (type === "avatar") {
     return (
@@ -154,7 +59,7 @@ export function ImageUpload({
             size="icon"
             variant="default"
             className="absolute bottom-3 right-2 h-7 w-7 rounded-full shadow-lg cursor-pointer hover:-bg-conic-30"
-            onClick={handleButtonClick}
+            onClick={triggerFileSelect}
             disabled={isUploading}
           >
             {isUploading ? (
@@ -167,7 +72,7 @@ export function ImageUpload({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
+            accept={IMAGE_UPLOAD.acceptedFormats.join(",")}
             className="hidden"
             onChange={handleFileSelect}
             disabled={isUploading}
@@ -179,7 +84,7 @@ export function ImageUpload({
             type="button"
             variant="outline"
             size="sm"
-            onClick={handleRemove}
+            onClick={removeImage}
             disabled={isUploading}
           >
             <IconTrash className="h-4 w-4" />
@@ -188,22 +93,6 @@ export function ImageUpload({
       </div>
     );
   }
-
-  const handleDrop = async (files: File[]) => {
-    const file = files[0];
-    if (!file) return;
-
-    // Create a synthetic event to reuse handleFileSelect
-    const syntheticEvent = {
-      target: {
-        files: [file],
-      },
-    } as React.ChangeEvent<HTMLInputElement>;
-
-    await handleFileSelect(syntheticEvent);
-  };
-
-  const [bannerFiles, setBannerFiles] = useState<File[] | undefined>(undefined);
 
   // Banner upload with custom Dropzone
   return (
@@ -221,7 +110,7 @@ export function ImageUpload({
               size="icon"
               variant="destructive"
               className="absolute top-2 right-2 h-8 w-8"
-              onClick={handleRemove}
+              onClick={removeImage}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -234,7 +123,7 @@ export function ImageUpload({
         </div>
       ) : (
         <Dropzone
-          maxSize={1024 * 1024 * 10}
+          maxSize={IMAGE_UPLOAD.maxSize}
           onDrop={handleDrop}
           onError={(error) => toast.error(error.message)}
           src={bannerFiles}

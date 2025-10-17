@@ -29,16 +29,25 @@ import { PreviewSheet } from "../preview/preview-sheet";
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
-export function ProfileForm({ store, socialLinks }: ProfileFormProps) {
+export function ProfileForm({
+  store,
+  socialLinks,
+  customization,
+}: ProfileFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
   const [profilePicUrl, setProfilePicUrl] = useState(
     store.profile_pic_url || ""
   );
   const [bannerPicUrl, setBannerPicUrl] = useState(store.banner_pic_url || "");
-  const [theme, setTheme] = useState("minimal_white");
-  const [fontFamily, setFontFamily] = useState("Inter");
-  const [blockShape, setBlockShape] = useState("round");
+  const theme = customization?.theme || "minimal_white";
+  const fontFamily = customization?.font_family || "Inter";
+  const blockShape = customization?.block_shape || "rounded";
+  const primaryColor = customization?.primary_color || "#000000";
+  const accentColor = customization?.accent_color || "#3B82F6";
+  const buttonConfig = {
+    style: (customization?.button_style as "filled" | "outlined" | "ghost") || "filled",
+  };
 
   const {
     register,
@@ -113,7 +122,7 @@ export function ProfileForm({ store, socialLinks }: ProfileFormProps) {
   };
 
   return (
-    <div className="flex gap-6 relative">
+    <div className="flex gap-6 w-full">
       <div className="lg:hidden fixed bottom-6 right-6 z-50">
         <PreviewSheet
           name={formValues.name}
@@ -125,11 +134,16 @@ export function ProfileForm({ store, socialLinks }: ProfileFormProps) {
           theme={theme}
           fontFamily={fontFamily}
           blockShape={blockShape}
+          colors={{
+            primary: primaryColor,
+            accent: accentColor,
+          }}
+          buttonConfig={buttonConfig}
         />
       </div>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 flex-1 max-w-3xl"
+        className="space-y-6 flex-1 max-w-5xl"
       >
         {/* Images Card */}
         <Card>
@@ -350,7 +364,7 @@ export function ProfileForm({ store, socialLinks }: ProfileFormProps) {
       </form>
 
       {/* Fixed Device Preview on the Right */}
-      <div className="hidden xl:block w-[420px] flex-shrink-0">
+      <div className="hidden xl:flex w-[420px] flex-shrink-0 justify-center">
         <div className="sticky top-[calc(var(--header-height)+1.5rem)]">
           <DevicePreview
             name={formValues.name}
@@ -362,6 +376,11 @@ export function ProfileForm({ store, socialLinks }: ProfileFormProps) {
             theme={theme}
             fontFamily={fontFamily}
             blockShape={blockShape}
+            colors={{
+              primary: primaryColor,
+              accent: accentColor,
+            }}
+            buttonConfig={buttonConfig}
           />
         </div>
       </div>

@@ -4,6 +4,7 @@ import type { AuthResponse } from './types'
 import { createServerSupabaseClient } from '../supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { z } from 'zod'
 
 export async function signup(formData: FormData): Promise<AuthResponse> {
     try {
@@ -49,14 +50,15 @@ export async function signup(formData: FormData): Promise<AuthResponse> {
         success: false,
         error: 'An error occurred while creating your account'
     }
-    } catch (error: any) {
-        if (error.name === 'ZodError') {
+    } catch (error) {
+        if (error instanceof z.ZodError) {
             return {
                 success: false, error: error.errors[0].message
             }
         }
         return {
-            success: false, error: error.message
+            success: false,
+            error: error instanceof Error ? error.message : 'An unexpected error occurred'
         }
 
     }
@@ -136,27 +138,27 @@ export async function login(formData: FormData): Promise<AuthResponse> {
       }
   
       return { success: true }
-    } catch (error: any) {
+    } catch (error) {
       // ⭐ BETTER ERROR HANDLING
       console.error('Login exception:', error)
-      
+
       // Handle Zod validation errors
-      if (error.name === 'ZodError') {
-        return { 
-          success: false, 
-          error: error.errors[0].message 
+      if (error instanceof z.ZodError) {
+        return {
+          success: false,
+          error: error.errors[0].message
         }
       }
-      
+
       // Handle redirect (Next.js throws NEXT_REDIRECT)
-      if (error.message === 'NEXT_REDIRECT') {
+      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
         throw error
       }
-      
+
       // Generic error with details
-      return { 
-        success: false, 
-        error: error.message || 'An unexpected error occurred. Please try again.' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.'
       }
     }
   }

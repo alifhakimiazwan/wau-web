@@ -33,7 +33,7 @@ export async function checkUsernameAvailability(
     }
 
     return { success: true, usernameAvailable: true }
-  } catch (error: any) {
+  } catch (error) {
     console.error('Username check error:', error)
     return { success: false, error: 'Failed to check username' }
   }
@@ -103,7 +103,7 @@ export async function completeOnboarding(
 
     revalidatePath('/', 'layout')
     redirect('/dashboard')
-  } catch (error: any) {
+  } catch (error) {
     console.error('Onboarding error:', error)
 
     if (error.name === 'ZodError') {

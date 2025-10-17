@@ -17,20 +17,8 @@ export function IPhoneMockup({ children, className }: DeviceMockupProps) {
 
         {/* Screen Content */}
         <div className="relative h-full w-full overflow-hidden rounded-[3rem] bg-white dark:bg-gray-900">
-          {/* Status Bar */}
-          <div className="absolute top-0 inset-x-0 h-14 bg-gradient-to-b from-black/5 to-transparent z-10 flex items-center justify-between px-7 pt-2">
-            <div className="text-sm font-semibold">9:41</div>
-            <div className="flex items-center gap-1">
-              <div className="w-5 h-3.5 border border-gray-900 dark:border-white rounded-sm">
-                <div className="w-full h-full bg-gray-900 dark:bg-white" />
-              </div>
-            </div>
-          </div>
-
           {/* Scrollable Content */}
-          <div className="absolute inset-0 overflow-y-auto pt-14">
-            {children}
-          </div>
+          <div className="absolute inset-0 overflow-y-auto">{children}</div>
         </div>
 
         {/* Home Indicator */}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { cn } from "@/lib/utils";
 import { useScroll } from "motion/react";
+import { Typography } from "./ui/typography";
 
 const menuItems = [
   { name: "Features", href: "#link" },
@@ -88,14 +89,29 @@ export const HeroHeader = () => {
                 </ul>
               </div>
               <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit">
-                <Button asChild variant="outline" size="sm">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full"
+                >
                   <Link href="/login">
-                    <span>Login</span>
+                    <Typography
+                      font="serif"
+                      className="font-semibold tracking-tighter"
+                    >
+                      Login
+                    </Typography>
                   </Link>
                 </Button>
-                <Button asChild size="sm">
+                <Button asChild size="sm" className="rounded-full">
                   <Link href="/signup">
-                    <span>Sign Up</span>
+                    <Typography
+                      font="serif"
+                      className="font-semibold tracking-tighter"
+                    >
+                      Sign Up
+                    </Typography>
                   </Link>
                 </Button>
               </div>
