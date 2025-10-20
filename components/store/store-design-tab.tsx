@@ -109,7 +109,6 @@ export function StoreDesignTab({
         </div>
       </div>
 
-      {/* Right: Live Preview */}
       <div className="hidden lg:block lg:flex-shrink-0">
         <DevicePreview
           name={store.name || "Your Store"}

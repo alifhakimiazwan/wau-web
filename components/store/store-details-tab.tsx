@@ -24,12 +24,10 @@ export function StoreDetailsTab({
   return (
     <div className="space-y-6">
       <ProfileCard store={store} socialLinks={socialLinks} />
-      <Button className="transition-none w-full flex flex-row" asChild>
-        <Link href="/store/menu">
-          <motion.button whileTap={{ scale: 0.85 }} className="flex flex-row">
-            <IconPlus className="h-6 w-6" />
-            Add Product
-          </motion.button>
+      <Button className="transition-none w-full flex flex-row items-center gap-2" asChild>
+        <Link href="/store/products">
+          <IconPlus className="h-5 w-5" />
+          Add Product
         </Link>
       </Button>
     </div>

@@ -1,8 +1,9 @@
 import { requireStore } from "@/lib/guards/onboarding-guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@/components/animate-ui/components/radix/tabs";
 import { StoreDetailsTab } from "@/components/store/store-details-tab";
 import { StoreDesignTab } from "@/components/store/store-design-tab";
+import { Store, Palette } from "lucide-react";
 
 interface StorePageProps {
   searchParams: Promise<{
@@ -44,7 +45,9 @@ export default async function StorePage({ searchParams }: StorePageProps) {
           (customization.block_shape as "square" | "rounded" | "pill") ||
           "rounded",
         buttonConfig: {
-          style: (customization.button_style as "filled" | "outlined" | "ghost") || "filled",
+          style:
+            (customization.button_style as "filled" | "outlined" | "ghost") ||
+            "filled",
         },
       }
     : undefined;
@@ -52,25 +55,30 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   return (
     <div className="space-y-6 p-5">
       <Tabs defaultValue={activeTab} className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="details">My Store</TabsTrigger>
-          <TabsTrigger value="design">Edit Design</TabsTrigger>
+        <TabsList className="gap-2">
+          <TabsTrigger value="details">
+            <Store className="w-4 h-4" />
+            My Store
+          </TabsTrigger>
+          <TabsTrigger value="design">
+            <Palette className="w-4 h-4" />
+            Edit Design
+          </TabsTrigger>
         </TabsList>
 
-        {/* My Store Tab */}
-        <TabsContent value="details" className="space-y-4">
-          <StoreDetailsTab store={store} socialLinks={socialLinks || []} />
-        </TabsContent>
+        <TabsContents>
+          <TabsContent value="details" className="space-y-4">
+            <StoreDetailsTab store={store} socialLinks={socialLinks || []} />
+          </TabsContent>
 
-        {/* Edit Design Tab */}
-        <TabsContent value="design" className="space-y-4">
-          {/* ✅ Pass data only, no functions */}
-          <StoreDesignTab
-            store={store}
-            socialLinks={socialLinks || []}
-            initialDesign={initialDesign}
-          />
-        </TabsContent>
+          <TabsContent value="design" className="space-y-4">
+            <StoreDesignTab
+              store={store}
+              socialLinks={socialLinks || []}
+              initialDesign={initialDesign}
+            />
+          </TabsContent>
+        </TabsContents>
       </Tabs>
     </div>
   );

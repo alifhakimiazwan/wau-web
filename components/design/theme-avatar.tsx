@@ -30,6 +30,7 @@ export function ThemedAvatar({
 
   // ⭐ Render based on effect type
   const renderAvatar = () => {
+    
     const baseAvatar = (
       <Avatar
         className={cn("h-24 w-24 border-4 border-current/20", shapeClass)}

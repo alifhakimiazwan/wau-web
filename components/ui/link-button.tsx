@@ -114,12 +114,14 @@ export function LinkButton({
       {Icon && <Icon className="h-5 w-5" />}
       <span className="capitalize">{label}</span>
 
-      <BorderBeam
-        duration={4}
-        size={100}
-        reverse
-        className="from-transparent via-gray-400 to-transparent"
-      />
+      {config.buttonEffect === "beam" && (
+        <BorderBeam
+          duration={4}
+          size={100}
+          reverse
+          className="from-transparent via-gray-400 to-transparent"
+        />
+      )}
     </button>
   );
 }
