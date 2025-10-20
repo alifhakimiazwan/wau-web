@@ -6,39 +6,13 @@ import { Typography } from "@/components/ui/typography";
 import { CreateLeadMagnetForm } from "@/components/products/lead-magnet/create-lead-magnet-form";
 
 import { requireStore } from "@/lib/guards/onboarding-guard";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import type { DesignCustomization } from "@/lib/design/types";
+import { getDesignCustomization } from "@/lib/design/actions";
 
 export default async function CreateLeadMagnetPage() {
-  // Server-side data fetching
   const { store } = await requireStore();
-  const supabase = await createServerSupabaseClient();
 
   // Fetch design customization
-  const { data: customization } = await supabase
-    .from("store_customization")
-    .select("*")
-    .eq("store_id", store.id)
-    .maybeSingle();
-
-  const designConfig: DesignCustomization | null = customization
-    ? {
-        themeId: customization.theme || "minimal_white",
-        fontFamily: customization.font_family || "Inter",
-        colors: {
-          primary: customization.primary_color || "#000000",
-          accent: customization.accent_color || "#3B82F6",
-        },
-        blockShape:
-          (customization.block_shape as "square" | "rounded" | "pill") ||
-          "rounded",
-        buttonConfig: {
-          style:
-            (customization.button_style as "filled" | "outlined" | "ghost") ||
-            "filled",
-        },
-      }
-    : null;
+  const designConfig = await getDesignCustomization(store.id);
 
   return (
     <div className="min-h-screen bg-background">

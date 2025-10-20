@@ -1,7 +1,7 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { leadMagnetSchema, type LeadMagnetSchema } from "./schema";
+import { leadMagnetSchema, type LeadMagnetSchema } from "./schemas";
 import { generateSlug, isValidSlug, getFallbackSlug } from "@/lib/utils/slug";
 import { ZodError } from "zod";
 
@@ -60,8 +60,6 @@ export async function createLeadMagnetProduct(
 ): Promise<ActionResponse> {
   try {
     const supabase = await createServerSupabaseClient();
-
-    // Get authenticated user
     const {
       data: { user },
       error: userError,
@@ -74,7 +72,6 @@ export async function createLeadMagnetProduct(
       };
     }
 
-    // Validate data
     const validatedData = leadMagnetSchema.parse(productData);
 
     // Get user's store

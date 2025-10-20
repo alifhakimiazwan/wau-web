@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { UseFormSetError, UseFormClearErrors } from 'react-hook-form'
-import type { OnboardingFormData } from '@/lib/validations/onboarding'
+import type { OnboardingFormData } from '@/lib/onboarding/schemas'
 
 interface UseUsernameAvailabilityProps {
   username: string

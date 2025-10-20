@@ -5,7 +5,7 @@ import { IconMapPin } from "@tabler/icons-react";
 import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { getSocialIcon } from "@/lib/preview/actions";
-import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/buttonTypes";
+import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
 import { ButtonPreviewMockup } from "../design/mock-button";
 import { usePreviewTheme, useValidLinks } from "./hooks";
 import type { StorefrontPreviewProps } from "./types";

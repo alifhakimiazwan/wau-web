@@ -1,5 +1,5 @@
 'use server'
-import { loginSchema, signupSchema } from '../validations/auth'
+import { loginSchema, signupSchema } from '../auth/schemas'
 import type { AuthResponse } from './types'
 import { createServerSupabaseClient } from '../supabase/server'
 import { revalidatePath } from 'next/cache'

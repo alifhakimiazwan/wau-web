@@ -1,5 +1,6 @@
 import { requireStore } from "@/lib/guards/onboarding-guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getDesignCustomization } from "@/lib/design/actions";
 import { Tabs, TabsContent, TabsContents, TabsList, TabsTrigger } from "@/components/animate-ui/components/radix/tabs";
 import { StoreDetailsTab } from "@/components/store/store-details-tab";
 import { StoreDesignTab } from "@/components/store/store-design-tab";
@@ -17,40 +18,16 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   const supabase = await createServerSupabaseClient();
 
   // Fetch data in parallel for better performance
-  const [{ data: socialLinks }, { data: customization }] = await Promise.all([
+  const [{ data: socialLinks }, initialDesign] = await Promise.all([
     supabase
       .from("social_links")
       .select("*")
       .eq("store_id", store.id)
       .order("position", { ascending: true }),
-    supabase
-      .from("store_customization")
-      .select("*")
-      .eq("store_id", store.id)
-      .maybeSingle(),
+    getDesignCustomization(store.id),
   ]);
 
   const activeTab = params.tab || "details";
-
-  // Prepare initial design
-  const initialDesign = customization
-    ? {
-        themeId: customization.theme || "minimal_white",
-        fontFamily: customization.font_family || "Inter",
-        colors: {
-          primary: customization.primary_color || "#000000",
-          accent: customization.accent_color || "#3B82F6",
-        },
-        blockShape:
-          (customization.block_shape as "square" | "rounded" | "pill") ||
-          "rounded",
-        buttonConfig: {
-          style:
-            (customization.button_style as "filled" | "outlined" | "ghost") ||
-            "filled",
-        },
-      }
-    : undefined;
 
   return (
     <div className="space-y-6 p-5">

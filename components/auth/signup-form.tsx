@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { signupSchema, type SignupFormData } from "@/lib/validations/auth";
+import { signupSchema, type SignupFormData } from "@/lib/auth/schemas";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { signup } from "@/lib/auth/actions";

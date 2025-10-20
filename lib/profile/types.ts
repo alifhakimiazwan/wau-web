@@ -11,7 +11,7 @@ import {
     IconWorld,
   } from "@tabler/icons-react";
 import type { Database } from "@/types/database.types";
-import { ButtonStyle } from "../design/buttonTypes";
+import { ButtonStyle } from "../design/types";
 
 export interface StorefrontPreviewProps {
     name: string;

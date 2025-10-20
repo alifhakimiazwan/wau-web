@@ -7,7 +7,7 @@ import { completeOnboarding } from "@/lib/onboarding/actions";
 import {
   onboardingSchema,
   type OnboardingFormData,
-} from "@/lib/validations/onboarding";
+} from "@/lib/onboarding/schemas";
 import { useUsernameAvailability } from "@/hooks/use-username-availability";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

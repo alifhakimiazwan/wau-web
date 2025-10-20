@@ -6,7 +6,7 @@ import { Magnet, TrashIcon, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, FieldDescription } from "@/components/ui/field";
-import { useThumbnailUpload } from "@/lib/products/hooks/useThumbnailUpload";
+import { useThumbnailUpload } from "@/hooks/use-thumbnail-upload";
 
 interface ThumbnailUploadProps {
   value?: string;

@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BLOCK_SHAPES } from "@/lib/design/buttonTypes";
+import { BLOCK_SHAPES } from "@/lib/design/types";
 import { cn } from "@/lib/utils";
 import { Typography } from "../ui/typography";
 import { ShapePreview } from "./shape-preview";

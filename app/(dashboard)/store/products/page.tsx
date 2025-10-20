@@ -11,6 +11,7 @@ import {
   Download,
   Gift,
   ArrowLeft,
+  Link2Icon,
 } from "lucide-react";
 import { Typography } from "@/components/ui/typography";
 
@@ -25,10 +26,11 @@ const productTypes = [
   },
   {
     id: 2,
-    type: "Digital Download",
-    description: "Downloadable digital products for your customers",
-    examples: ["Courses", "Worksheets", "Graphics", "Fonts"],
-    icon: Download,
+    type: "Links",
+    description:
+      "Link to a Website, Affiliate Link, or even Embed Youtube and Spotify content",
+    examples: ["Website", "Affiliates", "Youtube", "Portfolio"],
+    icon: Link2Icon,
     href: "#",
   },
   {
@@ -77,7 +79,7 @@ const ProductsMenu = () => {
           </Typography>
         </div>
 
-        <div className="space-y-6">
+        <div className="flex flex-col gap-2">
           {productTypes.map((productType) => {
             const Icon = productType.icon;
             return (

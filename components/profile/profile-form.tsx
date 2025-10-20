@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { getPlatformInfo } from "@/lib/profile/actions";
 import { ImageUpload } from "./image-upload";
 import { PLATFORMS } from "@/lib/profile/types";
-import { profileSchema } from "@/lib/profile/schema";
+import { profileSchema } from "@/lib/profile/schemas";
 import { ProfileFormProps } from "@/lib/profile/types";
 import { DevicePreview } from "../preview/device-preview";
 import { PreviewSheet } from "../preview/preview-sheet";

@@ -26,7 +26,7 @@ import { SuccessMessage } from "@/components/products/success-message";
 import { ProductPreviewWrapper } from "@/components/preview/product-preview-wrapper";
 import { LeadMagnetPreview } from "@/components/preview/lead-magnet-preview";
 
-import { leadMagnetSchema, type LeadMagnetSchema } from "@/lib/products/schema";
+import { leadMagnetSchema, type LeadMagnetSchema } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
 
 interface CreateLeadMagnetFormProps {

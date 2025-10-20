@@ -1,7 +1,7 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { onboardingSchema } from '@/lib/validations/onboarding'
+import { onboardingSchema } from '@/lib/onboarding/schemas'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { OnboardingResponse } from './types'

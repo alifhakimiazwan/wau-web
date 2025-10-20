@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { useDebounce } from "./useDebounce";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface UseAutoSaveParams<T> {
   data: T;

@@ -1,5 +1,6 @@
 import { requireStore } from "@/lib/guards/onboarding-guard";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getRawCustomization } from "@/lib/design/actions";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -10,20 +11,13 @@ export default async function ProfilePage() {
   const supabase = await createServerSupabaseClient();
 
   // Fetch data in parallel for better performance
-  const [
-    { data: socialLinks },
-    { data: customization }
-  ] = await Promise.all([
+  const [{ data: socialLinks }, customization] = await Promise.all([
     supabase
       .from("social_links")
       .select("*")
       .eq("store_id", store.id)
       .order("position", { ascending: true }),
-    supabase
-      .from("store_customization")
-      .select("*")
-      .eq("store_id", store.id)
-      .maybeSingle(),
+    getRawCustomization(store.id),
   ]);
 
   return (

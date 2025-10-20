@@ -7,7 +7,7 @@ import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
 import { getSocialIcon } from "@/lib/preview/actions";
 import { getInitials } from "@/lib/profile/actions";
-import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/buttonTypes";
+import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
 import { ThemedAvatar } from "../design/theme-avatar";
 import { ButtonPreviewMockup } from "../design/mock-button";
 import { HeroStorefrontPreview } from "./hero-storefront-preview";

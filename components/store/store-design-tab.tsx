@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import type { DesignCustomization } from "@/lib/design/types";
 import type { Database } from "@/types/database.types";
 import { PreviewSheet } from "../preview/preview-sheet";
-import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/buttonTypes";
+import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
 import { useRouter } from "next/navigation";
 
 type Store = Database["public"]["Tables"]["stores"]["Row"];

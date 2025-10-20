@@ -6,7 +6,7 @@
 
 import { useState, useRef } from "react";
 import { toast } from "sonner";
-import { compressImage } from "@/lib/image/image";
+import { compressImage } from "@/lib/image/actions";
 import { IMAGE_UPLOAD } from "../constants";
 
 interface UseImageUploadParams {

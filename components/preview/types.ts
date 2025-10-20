@@ -1,4 +1,4 @@
-import { ButtonStyle } from "@/lib/design/buttonTypes";
+import { ButtonStyle } from "@/lib/design/types";
 
 /**
  * Shared props for all storefront preview components

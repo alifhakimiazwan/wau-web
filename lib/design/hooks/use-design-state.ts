@@ -6,7 +6,7 @@
 
 import { useState, useCallback } from "react";
 import { AVAILABLE_THEMES } from "@/lib/design/types";
-import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/buttonTypes";
+import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
 import type { DesignCustomization } from "@/lib/design/types";
 
 interface UseDesignStateParams {

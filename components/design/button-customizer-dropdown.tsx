@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { BUTTON_STYLES, type ButtonStyle } from "@/lib/design/buttonTypes";
+import { BUTTON_STYLES, type ButtonStyle } from "@/lib/design/types";
 import { cn } from "@/lib/utils";
 
 interface ButtonCustomizerDropdownProps {
