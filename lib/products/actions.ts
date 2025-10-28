@@ -476,3 +476,43 @@ export async function createDigitalProduct(
     };
   }
 }
+
+export async function deleteProduct(productId: string): Promise<ActionResponse<null>>{
+  try {
+    const authResult = await getAuthUserWithStore();
+
+    if (!authResult.success){
+      return{
+        success: false,
+        error: authResult.error
+      }
+    }
+
+    const {store} = authResult;
+    const supabase = await createServerSupabaseClient();
+
+    const { error: deleteError} = await supabase.from("products").delete().eq("id", productId).eq("store_id", store.id);
+
+    if(deleteError){
+      console.error("Delete error:", deleteError);
+      return {
+        success: false,
+        error: "Failed to delete product. Please try again"
+      }
+    }
+    revalidatePath("/store");
+    revalidatePath("/store/products");
+
+    return {
+      success: true,
+      data: null
+    }
+
+  } catch (error) {
+    console.error("Delete product error:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again."
+    }
+  }
+}
