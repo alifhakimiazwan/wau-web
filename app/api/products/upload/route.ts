@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getAuthUserWithStore } from "@/lib/guards/auth-helpers";
 
 /**
  * API Route: Upload Product Files
@@ -25,34 +26,18 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check auth + store
+    const authResult = await getAuthUserWithStore();
+    if (!authResult.success) {
+      const status = authResult.error?.includes("authenticated") ? 401 : 404;
+      return NextResponse.json(
+        { success: false, error: authResult.error },
+        { status }
+      );
+    }
+    const { user } = authResult;
+
     const supabase = await createServerSupabaseClient();
-
-    // Get authenticated user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return NextResponse.json(
-        { success: false, error: "Not authenticated" },
-        { status: 401 }
-      );
-    }
-
-    // Verify user has a store
-    const { data: store, error: storeError } = await supabase
-      .from("stores")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (storeError || !store) {
-      return NextResponse.json(
-        { success: false, error: "Store not found. Please complete onboarding first." },
-        { status: 404 }
-      );
-    }
 
     // Validate file type and size
     const MAX_THUMBNAIL_SIZE = 5 * 1024 * 1024; // 5MB

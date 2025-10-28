@@ -355,97 +355,52 @@ export async function logout() {
 
 ### Route Protection Guards
 
-Create reusable guards for protecting routes and checking onboarding status:
+**CRITICAL: Always reuse existing helper functions - never duplicate auth/store checks!**
+
+We have two types of auth helpers:
+
+**1. For Server Components/Layouts (with redirect):**
+- `requireAuth()` - Redirects to /login if not authenticated
+- `requireStore()` - Redirects to /onboarding if no store
+- Location: `lib/guards/onboarding-guard.ts`
+
+**2. For Server Actions/API Routes (returns result object):**
+- `getAuthUser()` - Returns `{ success, user?, error? }`
+- `getAuthUserWithStore()` - Returns `{ success, user?, store?, error? }`
+- Location: `lib/guards/auth-helpers.ts`
 
 ```typescript
-// lib/guards/onboarding-guard.ts
-import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
+// ✅ Server Action - use getAuthUserWithStore
+'use server'
+import { getAuthUserWithStore } from '@/lib/guards/auth-helpers'
 
-/**
- * Ensures user is authenticated.
- * Redirects to /login if not.
- */
-export async function requireAuth() {
-  const supabase = await createServerSupabaseClient()
-  const { data: { user }, error } = await supabase.auth.getUser()
-
-  if (error || !user) {
-    redirect('/login')
+export async function createProduct(data: ProductData) {
+  const authResult = await getAuthUserWithStore()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
   }
-
-  return { user }
+  const { user, store } = authResult
+  // ... use user and store
 }
 
-/**
- * Ensures user has completed onboarding (has a store).
- * Redirects to /onboarding if not.
- */
-export async function requireStore() {
-  const { user } = await requireAuth()
-  const supabase = await createServerSupabaseClient()
+// ✅ API Route - use getAuthUserWithStore
+import { getAuthUserWithStore } from '@/lib/guards/auth-helpers'
 
-  const { data: store, error } = await supabase
-    .from('stores')
-    .select('*')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (error || !store) {
-    redirect('/onboarding')
+export async function POST(request: Request) {
+  const authResult = await getAuthUserWithStore()
+  if (!authResult.success) {
+    return NextResponse.json({ success: false, error: authResult.error }, { status: 401 })
   }
-
-  return { user, store }
+  const { user, store } = authResult
+  // ... use user and store
 }
 
-/**
- * Prevents access to onboarding if user already has a store.
- * Redirects to /dashboard if store exists.
- */
-export async function preventCompletedOnboarding() {
-  const { user } = await requireAuth()
-  const supabase = await createServerSupabaseClient()
-
-  const { data: store } = await supabase
-    .from('stores')
-    .select('id')
-    .eq('user_id', user.id)
-    .maybeSingle()
-
-  if (store) {
-    redirect('/dashboard')
-  }
-
-  return { user }
-}
-```
-
-### Usage in Layouts
-
-```typescript
-// app/(dashboard)/layout.tsx
+// ✅ Layout - use requireStore
 import { requireStore } from '@/lib/guards/onboarding-guard'
 
 export default async function DashboardLayout({ children }) {
-  // Automatically redirects if user isn't authenticated or has no store
-  const { user, store } = await requireStore()
-
-  return (
-    <SidebarProvider>
-      <AppSidebar user={user} store={store} />
-      <main>{children}</main>
-    </SidebarProvider>
-  )
-}
-
-// app/onboarding/layout.tsx
-import { preventCompletedOnboarding } from '@/lib/guards/onboarding-guard'
-
-export default async function OnboardingLayout({ children }) {
-  // Prevents users who already have a store from accessing onboarding
-  await preventCompletedOnboarding()
-
-  return <>{children}</>
+  const { user, store } = await requireStore() // auto-redirects
+  return <SidebarProvider><AppSidebar user={user} store={store} />{children}</SidebarProvider>
 }
 ```
 

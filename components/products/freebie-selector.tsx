@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { UseFormRegister, FieldErrors } from "react-hook-form";
-import { Input } from "@/components/ui/input";
+import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from "react-hook-form";
+import { FloatingInput } from "@/components/ui/floating-input";
 import {
   Tabs,
   TabsContent,
@@ -10,7 +10,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/animate-ui/components/radix/tabs";
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import { Field, FieldDescription } from "@/components/ui/field";
 import { Card } from "@/components/ui/card";
 import { Link as LinkIcon, Upload, FileText, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,12 +20,13 @@ import {
   DropzoneContent,
   DropzoneEmptyState,
 } from "@/components/ui/shadcn-io/dropzone";
+import type { LeadMagnetInput } from "@/lib/products/schemas";
 
 interface FreebieSelectorProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
-  watch: any;
-  setValue: any;
+  register: UseFormRegister<LeadMagnetInput>;
+  errors: FieldErrors<LeadMagnetInput>;
+  watch: UseFormWatch<LeadMagnetInput>;
+  setValue: UseFormSetValue<LeadMagnetInput>;
 }
 
 export function FreebieSelector({
@@ -90,12 +91,13 @@ export function FreebieSelector({
 
   const handleTabChange = useCallback(
     (value: string) => {
-      setValue("freebieType", value);
+      const freebieType = value as "link" | "file";
+      setValue("freebieType", freebieType);
       // Clear the opposite field when switching tabs
-      if (value === "link") {
+      if (freebieType === "link") {
         setUploadedFile(null);
         setValue("freebieFile", undefined);
-      } else if (value === "file") {
+      } else if (freebieType === "file") {
         setValue("freebieLink", undefined);
       }
     },
@@ -124,36 +126,18 @@ export function FreebieSelector({
           <TabsContents>
             <TabsContent value="link" className="mt-4">
               <Card className="p-4 space-y-4">
-                <Field>
-                  <FieldLabel htmlFor="freebieLink.title">
-                    Link Title
-                  </FieldLabel>
-                  <Input
-                    id="freebieLink.title"
-                    placeholder="e.g., Download Template"
-                    {...register("freebieLink.title")}
-                  />
-                  {errors.freebieLink?.title && (
-                    <FieldDescription className="text-destructive">
-                      {errors.freebieLink.title.message as string}
-                    </FieldDescription>
-                  )}
-                </Field>
+                <FloatingInput
+                  label="Link Title"
+                  error={errors.freebieLink?.title?.message as string}
+                  {...register("freebieLink.title")}
+                />
 
-                <Field>
-                  <FieldLabel htmlFor="freebieLink.url">Link URL</FieldLabel>
-                  <Input
-                    id="freebieLink.url"
-                    type="url"
-                    placeholder="https://example.com/download"
-                    {...register("freebieLink.url")}
-                  />
-                  {errors.freebieLink?.url && (
-                    <FieldDescription className="text-destructive">
-                      {errors.freebieLink.url.message as string}
-                    </FieldDescription>
-                  )}
-                </Field>
+                <FloatingInput
+                  label="Link URL"
+                  type="url"
+                  error={errors.freebieLink?.url?.message as string}
+                  {...register("freebieLink.url")}
+                />
               </Card>
             </TabsContent>
 

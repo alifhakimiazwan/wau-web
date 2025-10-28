@@ -2,16 +2,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
 import {
-  Instagram,
-  InstagramIcon,
   FileText,
-  Download,
   Gift,
   ArrowLeft,
   Link2Icon,
+  InstagramIcon,
 } from "lucide-react";
 import { Typography } from "@/components/ui/typography";
 
@@ -31,7 +28,7 @@ const productTypes = [
       "Link to a Website, Affiliate Link, or even Embed Youtube and Spotify content",
     examples: ["Website", "Affiliates", "Youtube", "Portfolio"],
     icon: Link2Icon,
-    href: "#",
+    href: "/store/products/links",
   },
   {
     id: 3,
@@ -39,7 +36,7 @@ const productTypes = [
     description: "Premium digital offerings and services",
     examples: ["Software", "Plugins", "Presets", "Assets"],
     icon: FileText,
-    href: "#",
+    href: "/store/products/digital-product",
   },
 ];
 

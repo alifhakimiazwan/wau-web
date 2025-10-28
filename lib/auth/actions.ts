@@ -53,7 +53,7 @@ export async function signup(formData: FormData): Promise<AuthResponse> {
     } catch (error) {
         if (error instanceof z.ZodError) {
             return {
-                success: false, error: error.errors[0].message
+                success: false, error: error.issues[0].message
             }
         }
         return {
@@ -74,17 +74,14 @@ export async function login(formData: FormData): Promise<AuthResponse> {
   
       const supabase = await createServerSupabaseClient()
   
-      // Sign in
       const { data: authData, error: loginError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
       })
   
       if (loginError) {
-        // ⭐ BETTER ERROR MESSAGES
         console.error('Login error:', loginError) // Log for debugging
         
-        // Map Supabase errors to user-friendly messages
         if (loginError.message === 'Invalid login credentials') {
           return { 
             success: false, 
@@ -121,9 +118,7 @@ export async function login(formData: FormData): Promise<AuthResponse> {
           .eq('user_id', authData.user.id)
           .single()
         
-        // ⭐ HANDLE STORE CHECK ERROR
         if (storeError && storeError.code !== 'PGRST116') {
-          // PGRST116 is "not found" which is expected for new users
           console.error('Store check error:', storeError)
         }
   
@@ -139,14 +134,12 @@ export async function login(formData: FormData): Promise<AuthResponse> {
   
       return { success: true }
     } catch (error) {
-      // ⭐ BETTER ERROR HANDLING
       console.error('Login exception:', error)
 
-      // Handle Zod validation errors
       if (error instanceof z.ZodError) {
         return {
           success: false,
-          error: error.errors[0].message
+          error: error.issues[0].message
         }
       }
 

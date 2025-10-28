@@ -54,7 +54,6 @@ export function OnboardingForm({
 
   const username = watch("username");
 
-  // ⭐ Use custom hook - much cleaner!
   const { isChecking, isAvailable } = useUsernameAvailability({
     username,
     setError,

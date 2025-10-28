@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import Image from "next/image";
-import { Magnet, TrashIcon, Upload, Loader2 } from "lucide-react";
+import { Magnet, TrashIcon, Upload, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, FieldDescription } from "@/components/ui/field";
@@ -92,24 +92,46 @@ export function ThumbnailUpload({
             </div>
           </Card>
         ) : (
-          <Card className="p-4">
+          <Card className="p-6">
             <div className="flex items-center gap-4">
-              <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted">
-                <Image
-                  src={displayUrl}
-                  alt="Thumbnail"
-                  fill
-                  className="object-cover"
-                />
+              <div className="relative w-24 h-24">
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-muted">
+                  <Image
+                    src={displayUrl}
+                    alt="Thumbnail"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                {/* X button on top right */}
+                <button
+                  type="button"
+                  onClick={handleRemove}
+                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-blue-800 hover:bg-blue-900 text-white flex items-center justify-center shadow-md transition-colors z-10"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-              <div className="flex-1 items-end">
+              <div className="flex-1 flex gap-2">
+                <input
+                  type="file"
+                  onChange={handleFileInput}
+                  accept="image/jpeg,image/png,image/webp,image/jpg"
+                  className="hidden"
+                  id="thumbnail-change"
+                  disabled={isUploading}
+                />
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={handleRemove}
+                  onClick={() =>
+                    document.getElementById("thumbnail-change")?.click()
+                  }
+                  disabled={isUploading}
                 >
-                  <TrashIcon className="w-4 h-4 text-red-500" />
+                  <Upload className="w-4 h-4 mr-2" />
+                  Change Image
                 </Button>
               </div>
             </div>

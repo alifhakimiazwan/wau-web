@@ -13,27 +13,27 @@ import {
   Gift,
   CheckCircle,
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
-
 import { ProductBasicInfo } from "@/components/products/product-basic-info";
 import { ThumbnailUpload } from "@/components/products/thumbnail-upload";
 import { CustomerFieldsSelector } from "@/components/products/customer-fields-selector";
 import { FreebieSelector } from "@/components/products/freebie-selector";
 import { SuccessMessage } from "@/components/products/success-message";
-import { ProductPreviewWrapper } from "@/components/preview/product-preview-wrapper";
-import { LeadMagnetPreview } from "@/components/preview/lead-magnet-preview";
-
-import { leadMagnetSchema, type LeadMagnetSchema } from "@/lib/products/schemas";
+import { ProductPreviewWrapper } from "@/components/preview/utils/product-preview-wrapper";
+import { LeadMagnetPreview } from "@/components/preview/lead-magnet/lead-magnet-preview";
+import { leadMagnetSchema, type LeadMagnetInput } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
+import { createLeadMagnetProduct } from "@/lib/products/actions";
 
 interface CreateLeadMagnetFormProps {
   designConfig: DesignCustomization | null;
 }
 
-export function CreateLeadMagnetForm({ designConfig }: CreateLeadMagnetFormProps) {
+export function CreateLeadMagnetForm({
+  designConfig,
+}: CreateLeadMagnetFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export function CreateLeadMagnetForm({ designConfig }: CreateLeadMagnetFormProps
     setValue,
     formState: { errors },
     setError,
-  } = useForm<LeadMagnetSchema>({
+  } = useForm<LeadMagnetInput>({
     resolver: zodResolver(leadMagnetSchema),
     defaultValues: {
       name: "",
@@ -66,14 +66,13 @@ export function CreateLeadMagnetForm({ designConfig }: CreateLeadMagnetFormProps
     },
   });
 
-  // Watch form values for real-time preview
   const watchedName = watch("name");
   const watchedSubtitle = watch("subtitle");
   const watchedButtonText = watch("buttonText");
   const watchedCustomerFields = watch("customerFields");
 
   const onSubmit = async (
-    data: LeadMagnetSchema,
+    data: Omit<LeadMagnetInput, 'status'>,
     status: "draft" | "published"
   ) => {
     startTransition(async () => {
@@ -84,20 +83,9 @@ export function CreateLeadMagnetForm({ designConfig }: CreateLeadMagnetFormProps
           status,
         };
 
-        const response = await fetch("/api/products/create", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            type: "lead_magnet",
-            ...payload,
-          }),
-        });
+        const result = await createLeadMagnetProduct(payload);
 
-        const result = await response.json();
-
-        if (!response.ok || !result.success) {
+        if (!result.success) {
           throw new Error(result.error || "Failed to create lead magnet");
         }
 
@@ -125,7 +113,6 @@ export function CreateLeadMagnetForm({ designConfig }: CreateLeadMagnetFormProps
 
   return (
     <div className="flex gap-8">
-      {/* Form Column */}
       <div className="flex-1">
         <form onSubmit={(e) => e.preventDefault()}>
           {/* Basic Information Section */}
@@ -147,7 +134,6 @@ export function CreateLeadMagnetForm({ designConfig }: CreateLeadMagnetFormProps
               <ProductBasicInfo register={register} errors={errors} />
             </div>
           </div>
-
           <Separator className="my-8" />
 
           {/* Thumbnail Section */}
@@ -255,7 +241,7 @@ export function CreateLeadMagnetForm({ designConfig }: CreateLeadMagnetFormProps
           <Separator className="my-8" />
 
           {/* Error Message */}
-          {errors.root && (
+          {/* {errors.root && (
             <div className="mb-8">
               <div className="p-4 border border-destructive bg-destructive/10 rounded-lg">
                 <Typography variant="small" className="text-destructive">
@@ -263,7 +249,7 @@ export function CreateLeadMagnetForm({ designConfig }: CreateLeadMagnetFormProps
                 </Typography>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Action Buttons */}
           <div className="flex items-center justify-between">

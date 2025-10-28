@@ -1,22 +1,20 @@
 "use client";
 
-import { UseFormRegister, FieldErrors } from "react-hook-form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import { Field, FieldDescription } from "@/components/ui/field";
 import { Card } from "@/components/ui/card";
 
+// Simple props without generic types - just take the values we need
 interface CustomerFieldsSelectorProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
-  watch: any;
-  setValue: any;
+  watch: (field: string) => boolean;
+  setValue: (field: string, value: boolean) => void;
+  errors?: { message?: string };
 }
 
 export function CustomerFieldsSelector({
-  register,
-  errors,
   watch,
   setValue,
+  errors,
 }: CustomerFieldsSelectorProps) {
   const emailChecked = watch("customerFields.email");
   const nameChecked = watch("customerFields.name");
@@ -31,7 +29,7 @@ export function CustomerFieldsSelector({
             id="customerFields.email"
             checked={emailChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.email", checked)
+              setValue("customerFields.email", checked === true)
             }
           />
           <label
@@ -48,7 +46,7 @@ export function CustomerFieldsSelector({
             id="customerFields.name"
             checked={nameChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.name", checked)
+              setValue("customerFields.name", checked === true)
             }
           />
           <label
@@ -65,7 +63,7 @@ export function CustomerFieldsSelector({
             id="customerFields.phone"
             checked={phoneChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.phone", checked)
+              setValue("customerFields.phone", checked === true)
             }
           />
           <label
@@ -77,9 +75,9 @@ export function CustomerFieldsSelector({
         </div>
       </Card>
 
-      {errors.customerFields && (
+      {errors && (
         <FieldDescription className="text-destructive">
-          {errors.customerFields.message as string}
+          {errors.message}
         </FieldDescription>
       )}
     </Field>

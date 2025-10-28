@@ -1,12 +1,5 @@
-/**
- * useDesignState Hook
- *
- * Manages design customization state with theme integration
- */
-
 import { useState, useCallback } from "react";
-import { AVAILABLE_THEMES } from "@/lib/design/types";
-import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
+import { AVAILABLE_THEMES, DEFAULT_DESIGN } from "@/lib/design/types";
 import type { DesignCustomization } from "@/lib/design/types";
 
 interface UseDesignStateParams {
@@ -19,16 +12,7 @@ export function useDesignState({
   onChange,
 }: UseDesignStateParams = {}) {
   const [design, setDesign] = useState<DesignCustomization>(
-    initialDesign || {
-      themeId: "minimal_white",
-      fontFamily: "Inter",
-      colors: {
-        primary: "#FFFFFF",
-        accent: "#000000",
-      },
-      blockShape: "rounded",
-      buttonConfig: DEFAULT_BUTTON_CONFIG,
-    }
+    initialDesign || DEFAULT_DESIGN
   );
 
   const updateDesign = useCallback(

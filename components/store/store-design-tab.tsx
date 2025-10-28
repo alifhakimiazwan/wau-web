@@ -3,17 +3,16 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { DesignCustomizer } from "@/components/design/design-customizer";
-import { DevicePreview } from "../preview/device-preview";
+import { DevicePreview } from "../preview/device-preview/device-preview";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DesignCustomization } from "@/lib/design/types";
-import type { Database } from "@/types/database.types";
-import { PreviewSheet } from "../preview/preview-sheet";
-import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
+import { MobilePreviewSheet } from "../preview/utils/preview-sheet";
+import { DEFAULT_DESIGN } from "@/lib/design/types";
+import { Store } from "@/lib/profile/types";
+import { SocialLink } from "@/lib/profile/types";
 import { useRouter } from "next/navigation";
-
-type Store = Database["public"]["Tables"]["stores"]["Row"];
-type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
+import { api } from "@/lib/axios";
 
 interface StoreDesignClientProps {
   store: Store;
@@ -27,39 +26,24 @@ export function StoreDesignTab({
   initialDesign,
 }: StoreDesignClientProps) {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
-
   const [design, setDesign] = useState<DesignCustomization>(
-    initialDesign || {
-      themeId: "minimal_white",
-      fontFamily: "Inter",
-      colors: {
-        primary: "#FFFFFF",
-        accent: "#000000",
-      },
-      blockShape: "rounded",
-      buttonConfig: DEFAULT_BUTTON_CONFIG,
-    }
+    initialDesign || DEFAULT_DESIGN
   );
+  const router = useRouter();
 
   const handleSave = () => {
     startTransition(async () => {
       try {
-        const response = await fetch("/api/store/design/update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            storeId: store.id,
-            design,
-          }),
+        const { data } = await api.post("/api/store/design/update", {
+          storeId: store.id,
+          design,
         });
 
-        const result = await response.json();
+        const result = await data.json();
 
         if (result.success) {
           toast.success("Design saved successfully!");
-          // Refresh the page to show updated data
-          window.location.reload();
+          router.refresh();
         } else {
           toast.error(result.error || "Failed to save design");
         }
@@ -73,7 +57,7 @@ export function StoreDesignTab({
   return (
     <div className="flex gap-6 w-full overflow-x-hidden">
       <div className="lg:hidden fixed bottom-6 right-6 z-50">
-        <PreviewSheet
+        <MobilePreviewSheet
           name={store.name || "Your Store"}
           bio={store.bio || ""}
           location={store.location || ""}

@@ -24,8 +24,8 @@ import { ImageUpload } from "./image-upload";
 import { PLATFORMS } from "@/lib/profile/types";
 import { profileSchema } from "@/lib/profile/schemas";
 import { ProfileFormProps } from "@/lib/profile/types";
-import { DevicePreview } from "../preview/device-preview";
-import { PreviewSheet } from "../preview/preview-sheet";
+import { DevicePreview } from "../preview/device-preview/device-preview";
+import { MobilePreviewSheet } from "../preview/utils/preview-sheet";
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
@@ -46,7 +46,9 @@ export function ProfileForm({
   const primaryColor = customization?.primary_color || "#000000";
   const accentColor = customization?.accent_color || "#3B82F6";
   const buttonConfig = {
-    style: (customization?.button_style as "filled" | "outlined" | "ghost") || "filled",
+    style:
+      (customization?.button_style as "filled" | "outlined" | "ghost") ||
+      "filled",
   };
 
   const {
@@ -124,7 +126,7 @@ export function ProfileForm({
   return (
     <div className="flex gap-6 w-full">
       <div className="lg:hidden fixed bottom-6 right-6 z-50">
-        <PreviewSheet
+        <MobilePreviewSheet
           name={formValues.name}
           bio={formValues.bio}
           location={formValues.location}

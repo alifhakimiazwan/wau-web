@@ -1,12 +1,12 @@
 "use client";
 
 import { UseFormRegister, FieldErrors } from "react-hook-form";
-import { Textarea } from "@/components/ui/textarea";
-import { Field, FieldLabel, FieldDescription } from "@/components/ui/field";
+import { FloatingTextarea } from "@/components/ui/floating-textarea";
+import type { LeadMagnetInput } from "@/lib/products/schemas";
 
 interface SuccessMessageProps {
-  register: UseFormRegister<any>;
-  errors: FieldErrors<any>;
+  register: UseFormRegister<LeadMagnetInput>;
+  errors: FieldErrors<LeadMagnetInput>;
   defaultMessage?: string;
 }
 
@@ -16,19 +16,11 @@ export function SuccessMessage({
   defaultMessage = "Thank you! Check your email for your free download.",
 }: SuccessMessageProps) {
   return (
-    <Field>
-      <Textarea
-        id="successMessage"
-        placeholder={defaultMessage}
-        rows={3}
-        {...register("successMessage")}
-      />
-
-      {errors.successMessage && (
-        <FieldDescription className="text-destructive">
-          {errors.successMessage.message as string}
-        </FieldDescription>
-      )}
-    </Field>
+    <FloatingTextarea
+      label="Success Message (Optional)"
+      rows={3}
+      error={errors.successMessage?.message as string}
+      {...register("successMessage")}
+    />
   );
 }

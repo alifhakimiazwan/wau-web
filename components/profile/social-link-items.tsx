@@ -9,7 +9,7 @@ import type { Database } from "@/types/database.types";
 import { getSocialIcon } from "@/lib/preview/actions";
 import { getPlaceholder } from "@/lib/profile/actions";
 import { SAVED_INDICATOR_DELAY } from "./constants";
-import { useSocialLinkMutation } from "./hooks/useSocialLinkMutation";
+import { useSocialLinkMutation } from "@/lib/profile/hooks/use-social-link-mutation";
 
 type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
 

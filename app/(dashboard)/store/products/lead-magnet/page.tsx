@@ -1,23 +1,19 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
 import { CreateLeadMagnetForm } from "@/components/products/lead-magnet/create-lead-magnet-form";
-
 import { requireStore } from "@/lib/guards/onboarding-guard";
 import { getDesignCustomization } from "@/lib/design/actions";
 
 export default async function CreateLeadMagnetPage() {
   const { store } = await requireStore();
 
-  // Fetch design customization
   const designConfig = await getDesignCustomization(store.id);
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto py-6 px-6">
-        {/* Header */}
         <div className="mb-8">
           <Link href="/store/products">
             <Button variant="ghost" size="sm" className="mb-4">

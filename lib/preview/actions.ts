@@ -58,3 +58,59 @@ export const isLightColor = (color: string): boolean => {
     const brightness = (r * 299 + g * 587 + b * 114) / 1000
     return brightness > 155
   }
+
+export function getYoutubeEmbedUrl(url: string): string | null {
+    if (!url) return null;
+  
+    // Handle youtube.com/watch?v=VIDEO_ID
+    const youtubeMatch = url.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+    );
+    if (youtubeMatch) {
+      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
+    }
+  
+    // Handle youtube.com/embed/VIDEO_ID (already embedded)
+    if (url.includes("youtube.com/embed/")) {
+      return url;
+    }
+  
+    return null;
+  }
+  
+export function getSpotifyEmbedUrl(url: string): string | null {
+    if (!url) return null;
+  
+    // Handle spotify.com/track/TRACK_ID
+    const trackMatch = url.match(/spotify\.com\/track\/([a-zA-Z0-9]+)/);
+    if (trackMatch) {
+      return `https://open.spotify.com/embed/track/${trackMatch[1]}`;
+    }
+  
+    // Handle spotify.com/album/ALBUM_ID
+    const albumMatch = url.match(/spotify\.com\/album\/([a-zA-Z0-9]+)/);
+    if (albumMatch) {
+      return `https://open.spotify.com/embed/album/${albumMatch[1]}`;
+    }
+  
+    // Handle spotify.com/playlist/PLAYLIST_ID
+    const playlistMatch = url.match(/spotify\.com\/playlist\/([a-zA-Z0-9]+)/);
+    if (playlistMatch) {
+      return `https://open.spotify.com/embed/playlist/${playlistMatch[1]}`;
+    }
+  
+    // Handle spotify.com/episode/EPISODE_ID
+    const episodeMatch = url.match(/spotify\.com\/episode\/([a-zA-Z0-9]+)/);
+    if (episodeMatch) {
+      return `https://open.spotify.com/embed/episode/${episodeMatch[1]}`;
+    }
+  
+    // Handle spotify.com/show/SHOW_ID
+    const showMatch = url.match(/spotify\.com\/show\/([a-zA-Z0-9]+)/);
+    if (showMatch) {
+      return `https://open.spotify.com/embed/show/${showMatch[1]}`;
+    }
+  
+    return null;
+  }
+  

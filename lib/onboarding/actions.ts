@@ -5,13 +5,19 @@ import { onboardingSchema } from '@/lib/onboarding/schemas'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { OnboardingResponse } from './types'
+import { z } from 'zod'
 
 export async function checkUsernameAvailability(
   username: string
 ): Promise<OnboardingResponse> {
   try {
     if (username.length < 3) {
-      return { success: false, error: 'Username too short' }
+      return { success: false, error: 'Username must be at least 3 characters' }
+    }
+
+    // Validate format
+    if (!/^[a-z0-9-]+$/.test(username)) {
+      return { success: false, error: 'Invalid username format' }
     }
 
     const supabase = await createServerSupabaseClient()
@@ -20,19 +26,16 @@ export async function checkUsernameAvailability(
       .from('stores')
       .select('id')
       .eq('slug', username.toLowerCase())
-      .single()
+      .maybeSingle()
 
-    if (error && error.code === 'PGRST116') {
-      // Not found - username is available
-      return { success: true, usernameAvailable: true }
+    if (error) {
+      console.error('Username check error:', error)
+      return { success: false, error: 'Failed to check username' }
     }
 
-    if (data) {
-      // Found - username is taken
-      return { success: true, usernameAvailable: false }
-    }
-
-    return { success: true, usernameAvailable: true }
+    // If data exists, username is taken
+    const available = !data
+    return { success: true, usernameAvailable: available }
   } catch (error) {
     console.error('Username check error:', error)
     return { success: false, error: 'Failed to check username' }
@@ -106,11 +109,12 @@ export async function completeOnboarding(
   } catch (error) {
     console.error('Onboarding error:', error)
 
-    if (error.name === 'ZodError') {
-      return { success: false, error: error.errors[0].message }
+    if (error instanceof z.ZodError) {
+      return { success: false, error: error.issues[0].message }
     }
 
-    if (error.message === 'NEXT_REDIRECT') {
+    
+    if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
       throw error
     }
 

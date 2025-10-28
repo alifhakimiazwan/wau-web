@@ -22,7 +22,7 @@ export const PLATFORM_CATEGORIES = {
 
 export const IMAGE_UPLOAD = {
   maxSize: 10 * 1024 * 1024, // 10MB
-  acceptedFormats: ["image/jpeg", "image/jpg", "image/png", "image/webp"],
+  acceptedFormats: ["image/jpeg", "image/jpg", "image/png", "image/webp"] as string[],
   dimensions: {
     avatar: { width: 400, height: 400 },
     banner: { width: 1200, height: 400 },

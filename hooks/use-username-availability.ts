@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { UseFormSetError, UseFormClearErrors } from 'react-hook-form'
 import type { OnboardingFormData } from '@/lib/onboarding/schemas'
+import { checkUsernameAvailability } from '@/lib/onboarding/actions'
 
 interface UseUsernameAvailabilityProps {
   username: string
@@ -37,27 +38,24 @@ export function useUsernameAvailability({
       return
     }
 
-    // Debounce the API call
+    // Debounce the Server Action call
     const timeoutId = setTimeout(async () => {
       setIsChecking(true)
 
       try {
-        const response = await fetch(
-          `/api/check-username?username=${encodeURIComponent(username)}`
-        )
-        const data = await response.json()
+        const result = await checkUsernameAvailability(username)
 
-        if (response.ok) {
-          setIsAvailable(data.available)
+        if (result.success && result.usernameAvailable !== undefined) {
+          setIsAvailable(result.usernameAvailable)
 
-          if (!data.available) {
+          if (!result.usernameAvailable) {
             setError('username', { message: 'Username is already taken' })
           } else {
             clearErrors('username')
           }
         } else {
           setError('username', {
-            message: data.error || 'Failed to check username',
+            message: result.error || 'Failed to check username',
           })
         }
       } catch (error) {

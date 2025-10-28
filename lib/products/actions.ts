@@ -1,11 +1,26 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { leadMagnetSchema, type LeadMagnetSchema } from "./schemas";
+import {
+  leadMagnetSchema,
+  type LeadMagnetSchema,
+  type LeadMagnetInput,
+  linkSchema,
+  type LinkSchema,
+  type LinkInput,
+  digitalProductSchema,
+  type DigitalProductSchema,
+  type DigitalProductInput
+} from "./schemas";
 import { generateSlug, isValidSlug, getFallbackSlug } from "@/lib/utils/slug";
 import { ZodError } from "zod";
+import type { Database } from "@/types/database.types";
+import { getAuthUserWithStore } from "@/lib/guards/auth-helpers";
 
-interface ActionResponse<T = any> {
+type Product = Database["public"]["Tables"]["products"]["Row"];
+
+interface ActionResponse<T = Product> {
   success: boolean;
   data?: T;
   error?: string;
@@ -56,37 +71,18 @@ async function generateUniqueSlug(
  * Create a lead magnet product
  */
 export async function createLeadMagnetProduct(
-  productData: LeadMagnetSchema
+  productData: Omit<LeadMagnetInput, 'status'> & { status?: "draft" | "published" }
 ): Promise<ActionResponse> {
   try {
-    const supabase = await createServerSupabaseClient();
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return {
-        success: false,
-        error: "Not authenticated",
-      };
+    // Check auth + store
+    const authResult = await getAuthUserWithStore();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
     }
+    const { store } = authResult;
 
     const validatedData = leadMagnetSchema.parse(productData);
-
-    // Get user's store
-    const { data: store, error: storeError } = await supabase
-      .from("stores")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (storeError || !store) {
-      return {
-        success: false,
-        error: "Store not found. Please complete onboarding first.",
-      };
-    }
+    const supabase = await createServerSupabaseClient();
 
     // Generate unique slug
     const slug = await generateUniqueSlug(validatedData.name, store.id);
@@ -135,7 +131,7 @@ export async function createLeadMagnetProduct(
     if (error instanceof ZodError) {
       return {
         success: false,
-        error: error.errors[0].message,
+        error: error.issues[0].message,
       };
     }
 
@@ -154,34 +150,14 @@ export async function uploadProductFile(
   type: "product_thumbnail" | "lead_magnet_file"
 ): Promise<ActionResponse<{ url: string; path: string; filename: string; size: number }>> {
   try {
+    // Check auth + store
+    const authResult = await getAuthUserWithStore();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
+    }
+    const { user } = authResult;
+
     const supabase = await createServerSupabaseClient();
-
-    // Get authenticated user
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError || !user) {
-      return {
-        success: false,
-        error: "Not authenticated",
-      };
-    }
-
-    // Verify user has a store
-    const { data: store, error: storeError } = await supabase
-      .from("stores")
-      .select("id")
-      .eq("user_id", user.id)
-      .single();
-
-    if (storeError || !store) {
-      return {
-        success: false,
-        error: "Store not found. Please complete onboarding first.",
-      };
-    }
 
     // Validate file type and size
     const MAX_THUMBNAIL_SIZE = 5 * 1024 * 1024; // 5MB
@@ -265,6 +241,238 @@ export async function uploadProductFile(
     return {
       success: false,
       error: "An unexpected error occurred during upload. Please try again.",
+    };
+  }
+}
+
+/**
+ * Create a link product
+ */
+export async function createLinkProduct(
+  productData: LinkSchema
+): Promise<ActionResponse> {
+  try {
+    // Check auth + store
+    const authResult = await getAuthUserWithStore();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
+    }
+    const { store } = authResult;
+
+    const validatedData = linkSchema.parse(productData);
+    const supabase = await createServerSupabaseClient();
+
+    // Generate unique slug - use title if available, otherwise use style + timestamp
+    const slugBase = validatedData.name || `${validatedData.style}-link`;
+    const slug = await generateUniqueSlug(slugBase, store.id);
+
+    // Build type_config
+    const typeConfig = {
+      style: validatedData.style,
+      name: validatedData.name,
+      subtitle: validatedData.subtitle,
+      buttonText: validatedData.buttonText,
+      url: validatedData.url,
+    };
+
+    // Insert product
+    const { data: product, error: insertError } = await supabase
+      .from("products")
+      .insert({
+        store_id: store.id,
+        type: "link",
+        name: validatedData.name || `${validatedData.style} Link`,
+        slug,
+        thumbnail_url: validatedData.thumbnail || null,
+        status: validatedData.status || "draft",
+        type_config: typeConfig,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return {
+        success: false,
+        error: "Failed to create link. Please try again.",
+      };
+    }
+
+    return {
+      success: true,
+      data: product,
+    };
+  } catch (error) {
+    console.error("Create link error:", error);
+
+    if (error instanceof ZodError) {
+      return {
+        success: false,
+        error: error.issues[0].message,
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again.",
+    };
+  }
+}
+
+
+export async function getStoreProducts(): Promise<ActionResponse <Product[]>>{
+  try {
+    const authResult = await getAuthUserWithStore();
+
+    if(!authResult.success){
+      return { success: false, error: authResult.error}
+    }
+
+    const { store } = authResult;
+
+    const supabase = await createServerSupabaseClient();
+
+    const {data: products, error} = await supabase.from("products").select("*").eq("store_id", store.id).order("position", {ascending: true})
+
+    if(error){
+      console.error("Fetch products, error", error);
+      return {
+        success: false,
+        error: "Failed to fetch products. Please try again."
+      }
+    }
+
+    return {
+      success: true, data: products
+    }
+
+
+  } catch (error) {
+    console.error("Get products error:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again."
+    }
+  }
+}
+
+export async function updateProductPositions(productsIds: string[]): Promise<ActionResponse<null>>{
+  try {
+    const authResult = await getAuthUserWithStore();
+    if(!authResult.success){
+      return {success: false, error: authResult.error}
+    }
+
+    const {store} = authResult;
+    const supabase = await createServerSupabaseClient();
+    const updates = productsIds.map((id, index) => supabase.from("products").update({position: index}).eq("id", id).eq("store_id", store.id))
+    const results = await Promise.all(updates);
+
+    const hasError = results.some((result) => result.error);
+    if (hasError){
+      console.error("Update positions error:", results);
+      return{
+        success: false,
+        error: "Failed to update product order. Please try again."
+      }
+    }
+    return {
+      success: true,
+      data: null
+    }
+  } catch (error) {
+    console.error("Update positions error:", error);
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again."
+    }
+  }
+}
+
+/**
+ * Create a digital product
+ */
+export async function createDigitalProduct(
+  productData: Omit<DigitalProductInput, 'status'> & { status?: "draft" | "published"; reviews?: unknown[] }
+): Promise<ActionResponse> {
+  try {
+    // Check auth + store
+    const authResult = await getAuthUserWithStore();
+    if (!authResult.success) {
+      return { success: false, error: authResult.error };
+    }
+    const { store } = authResult;
+
+    const validatedData = digitalProductSchema.parse(productData);
+    const supabase = await createServerSupabaseClient();
+
+    // Generate unique slug
+    const slug = await generateUniqueSlug(validatedData.cardTitle, store.id);
+
+    // Build type_config
+    const typeConfig = {
+      style: validatedData.style,
+      cardTitle: validatedData.cardTitle,
+      cardSubtitle: validatedData.cardSubtitle,
+      cardButtonText: validatedData.cardButtonText,
+      cardThumbnail: validatedData.cardThumbnail,
+      description: validatedData.description,
+      bottomTitle: validatedData.bottomTitle,
+      checkoutButtonText: validatedData.checkoutButtonText,
+      checkoutImage: validatedData.checkoutImage,
+      price: validatedData.price,
+      discountedPrice: validatedData.discountedPrice,
+      hasDiscount: validatedData.hasDiscount,
+      customerFields: validatedData.customerFields,
+      productType: validatedData.productType,
+      productLink: validatedData.productLink,
+      productFile: validatedData.productFile,
+      reviews: productData.reviews || [],
+    };
+
+    // Insert product
+    const { data: product, error: insertError } = await supabase
+      .from("products")
+      .insert({
+        store_id: store.id,
+        type: "digital_product",
+        name: validatedData.cardTitle,
+        slug,
+        thumbnail_url: validatedData.cardThumbnail || null,
+        status: validatedData.status || "draft",
+        type_config: typeConfig,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      return {
+        success: false,
+        error: "Failed to create digital product. Please try again.",
+      };
+    }
+
+    // Revalidate products list
+    revalidatePath("/store/products");
+
+    return {
+      success: true,
+      data: product,
+    };
+  } catch (error) {
+    console.error("Create digital product error:", error);
+
+    if (error instanceof ZodError) {
+      return {
+        success: false,
+        error: error.issues[0].message,
+      };
+    }
+
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again.",
     };
   }
 }

@@ -7,7 +7,7 @@
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { compressImage } from "@/lib/image/actions";
-import { IMAGE_UPLOAD } from "../constants";
+import { IMAGE_UPLOAD } from "@/components/profile/constants";
 
 interface UseImageUploadParams {
   type: "avatar" | "banner";

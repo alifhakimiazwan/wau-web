@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { IconPencil, IconUpload, IconTrash } from "@tabler/icons-react";
@@ -13,7 +14,7 @@ import {
 import { getInitials } from "@/lib/profile/actions";
 import { ImageUploadProps } from "@/lib/image/types";
 import { IMAGE_UPLOAD } from "./constants";
-import { useImageUpload } from "./hooks/useImageUpload";
+import { useImageUpload } from "@/lib/profile/hooks/use-image-upload";
 
 export function ImageUpload({
   currentImageUrl,
@@ -32,7 +33,7 @@ export function ImageUpload({
     triggerFileSelect,
   } = useImageUpload({
     type,
-    currentImageUrl,
+    currentImageUrl: currentImageUrl || undefined,
     onUploadComplete: onUploadCompleteAction,
   });
 
@@ -50,7 +51,7 @@ export function ImageUpload({
               className="object-cover"
             />
             <AvatarFallback className="text-2xl font-semibold">
-              {getInitials(storeName)}
+              {getInitials(storeName || storeSlug)}
             </AvatarFallback>
           </Avatar>
 

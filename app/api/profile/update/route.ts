@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
+import { getAuthUserWithStore } from '@/lib/guards/auth-helpers'
 
 const updateProfileSchema = z.object({
   name: z.string().min(2),
@@ -20,33 +21,21 @@ const updateProfileSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
+    // Check auth + store
+    const authResult = await getAuthUserWithStore();
+    if (!authResult.success) {
+      const status = authResult.error?.includes("authenticated") ? 401 : 404;
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
-        { status: 401 }
-      )
+        { success: false, error: authResult.error },
+        { status }
+      );
     }
+    const { store } = authResult;
 
     const body = await request.json()
     const data = updateProfileSchema.parse(body)
 
-    // Get store
-    const { data: store } = await supabase
-      .from('stores')
-      .select('id')
-      .eq('user_id', user.id)
-      .single()
-
-    if (!store) {
-      return NextResponse.json(
-        { success: false, error: 'Store not found' },
-        { status: 404 }
-      )
-    }
+    const supabase = await createServerSupabaseClient()
 
     // ⭐ Update store info
     const { error: updateError } = await supabase
@@ -124,7 +113,7 @@ export async function POST(request: Request) {
 
     if (error instanceof ZodError) {
       return NextResponse.json(
-        { success: false, error: error.errors[0].message },
+        { success: false, error: error.issues[0].message },
         { status: 400 }
       )
     }

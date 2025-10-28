@@ -1,21 +1,23 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
+import { getAuthUser } from '@/lib/guards/auth-helpers'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
+    // Check auth
+    const authResult = await getAuthUser();
+    if (!authResult.success) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { success: false, error: authResult.error },
         { status: 401 }
-      )
+      );
     }
+    const { user } = authResult;
+
+    const supabase = await createServerSupabaseClient();
     const formData = await request.formData()
     const file = formData.get('file') as File
     const type = formData.get('type') as 'avatar' | 'banner'
@@ -98,16 +100,17 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
+    // Check auth
+    const authResult = await getAuthUser();
+    if (!authResult.success) {
       return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
+        { success: false, error: authResult.error },
         { status: 401 }
-      )
+      );
     }
+    const { user } = authResult;
+
+    const supabase = await createServerSupabaseClient();
 
     const body = await request.json()
     const { imageUrl } = body

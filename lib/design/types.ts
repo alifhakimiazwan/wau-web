@@ -91,6 +91,17 @@ export interface DesignTheme {
     blockShape: 'square' | 'rounded' | 'pill'  // Affects both avatar and buttons
     buttonConfig: ButtonStyle
   }
+
+  export const DEFAULT_DESIGN: DesignCustomization = {
+    themeId: "minimal_white",
+    fontFamily: "Inter",
+    colors: {
+      primary: "#FFFFFF",
+      accent: "#000000",
+    },
+    blockShape: "rounded",
+    buttonConfig: DEFAULT_BUTTON_CONFIG,
+  };
   
   export const AVAILABLE_THEMES: DesignTheme[] = [
     {

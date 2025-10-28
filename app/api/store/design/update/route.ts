@@ -1,38 +1,34 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { DesignSchema } from '@/lib/design/schema'
+import { DesignSchema } from '@/lib/design/schemas'
 import { ZodError } from 'zod'
+import { getAuthUserWithStore } from '@/lib/guards/auth-helpers'
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createServerSupabaseClient()
-    
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    
-    if (userError || !user) {
-      return NextResponse.json(
-        { success: false, error: 'Not authenticated' },
-        { status: 401 }
-      )
-    }
-
     const body = await request.json()
     const { storeId, design } = DesignSchema.parse(body)
 
-    // Verify store ownership
-    const { data: store } = await supabase
-      .from('stores')
-      .select('id')
-      .eq('id', storeId)
-      .eq('user_id', user.id)
-      .single()
-
-    if (!store) {
+    // Check auth + verify store ownership
+    const authResult = await getAuthUserWithStore();
+    if (!authResult.success) {
+      const status = authResult.error?.includes("authenticated") ? 401 : 404;
       return NextResponse.json(
-        { success: false, error: 'Store not found' },
-        { status: 404 }
-      )
+        { success: false, error: authResult.error },
+        { status }
+      );
     }
+    const { store } = authResult;
+
+    // Verify the storeId in the request matches the user's store
+    if (store.id !== storeId) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 403 }
+      );
+    }
+
+    const supabase = await createServerSupabaseClient()
 
     // Check if customization exists
     const { data: existing } = await supabase
@@ -90,9 +86,9 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Save design error:', error)
 
-    if (error instanceof z.ZodError) {
+    if (error instanceof ZodError) {
       return NextResponse.json(
-        { success: false, error: error.errors[0].message },
+        { success: false, error: error.issues[0].message },
         { status: 400 }
       )
     }
