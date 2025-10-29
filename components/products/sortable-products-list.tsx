@@ -14,7 +14,6 @@ import {
   ShoppingBag,
   GripVertical,
   MoreVertical,
-  Edit,
   Trash2,
   Eye,
   Package,
@@ -24,7 +23,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
