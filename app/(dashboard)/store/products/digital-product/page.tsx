@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
 import { CreateDigitalProductForm } from "@/components/products/digital-product/create-digital-product-form";
 import { requireStore } from "@/lib/guards/onboarding-guard";
+import { getDesignCustomization } from "@/lib/design/actions";
 
 export default async function CreateDigitalProductPage() {
-  await requireStore();
+  const { store } = await requireStore();
+  const designConfig = await getDesignCustomization(store.id);
 
   return (
     <div className="min-h-screen bg-background">
@@ -26,7 +28,7 @@ export default async function CreateDigitalProductPage() {
         </div>
 
         {/* Form Component */}
-        <CreateDigitalProductForm />
+        <CreateDigitalProductForm designConfig={designConfig} />
       </div>
     </div>
   );

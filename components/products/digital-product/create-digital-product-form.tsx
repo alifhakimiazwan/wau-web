@@ -38,8 +38,16 @@ import {
   type ProductReviewSchema,
 } from "@/lib/products/schemas";
 import { createDigitalProduct } from "@/lib/products/actions";
+import type { DesignCustomization } from "@/lib/design/types";
+import { DigitalProductPreview } from "@/components/products/digital-product/digital-product-preview";
 
-export function CreateDigitalProductForm() {
+interface CreateDigitalProductFormProps {
+  designConfig: DesignCustomization | null;
+}
+
+export function CreateDigitalProductForm({
+  designConfig,
+}: CreateDigitalProductFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<
@@ -54,6 +62,7 @@ export function CreateDigitalProductForm() {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors },
   } = useForm<DigitalProductInput>({
     resolver: zodResolver(digitalProductSchema),
@@ -78,7 +87,7 @@ export function CreateDigitalProductForm() {
     },
   });
 
-  // Watch only fields needed for conditional rendering
+  // Watch only fields needed for conditional rendering in the form
   const selectedStyle = watch("style");
 
   const onSubmit = async (
@@ -154,13 +163,15 @@ export function CreateDigitalProductForm() {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()}>
-      <Tabs
-        value={activeTab}
-        onValueChange={(value) =>
-          setActiveTab(value as "landing" | "checkout" | "advanced")
-        }
-      >
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+      {/* Form Section */}
+      <form onSubmit={(e) => e.preventDefault()} className="lg:col-span-3">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) =>
+            setActiveTab(value as "landing" | "checkout" | "advanced")
+          }
+        >
         <TabsList className="mb-8">
           <TabsTrigger value="landing">
             <LayoutDashboard className="w-4 h-4 mr-2" />
@@ -277,8 +288,8 @@ export function CreateDigitalProductForm() {
                 </Typography>
               </div>
               <CustomerFieldsSelector
-                watch={(field) => watch(field as any)}
-                setValue={(field, value) => setValue(field as any, value)}
+                watch={watch}
+                setValue={setValue}
                 errors={errors.customerFields}
               />
             </div>
@@ -352,5 +363,30 @@ export function CreateDigitalProductForm() {
         </TabsContents>
       </Tabs>
     </form>
+
+    {/* Preview Section */}
+    <div className="lg:col-span-2 hidden lg:block">
+      <div className="sticky top-24">
+        <DigitalProductPreview
+          control={control}
+          cardThumbnail={cardThumbnail}
+          checkoutImage={checkoutImage}
+          activeTab={activeTab}
+          designConfig={designConfig}
+        />
+      </div>
+    </div>
+
+    {/* Mobile Preview Button */}
+    <div className="lg:hidden">
+      <DigitalProductPreview
+        control={control}
+        cardThumbnail={cardThumbnail}
+        checkoutImage={checkoutImage}
+        activeTab={activeTab}
+        designConfig={designConfig}
+      />
+    </div>
+    </div>
   );
 }

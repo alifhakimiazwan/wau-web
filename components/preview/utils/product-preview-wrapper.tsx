@@ -22,11 +22,8 @@ export function ProductPreviewWrapper({
     <>
       {/* Desktop: Sticky sidebar */}
       <div className="hidden lg:block">
-        <div className="sticky top-8">
-          <div className="rounded-lg bg-muted/30 p-4">
-            <h3 className="text-sm font-semibold mb-4">Preview</h3>
-            {children}
-          </div>
+        <div className="sticky top-8 max-h-[calc(100vh-4rem)] overflow-y-auto">
+          <div className="rounded-lg bg-muted/30">{children}</div>
         </div>
       </div>
 

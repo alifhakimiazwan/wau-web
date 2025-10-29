@@ -440,7 +440,7 @@ export async function createDigitalProduct(
         slug,
         thumbnail_url: validatedData.cardThumbnail || null,
         status: validatedData.status || "draft",
-        type_config: typeConfig,
+        type_config: typeConfig as unknown as Database["public"]["Tables"]["products"]["Insert"]["type_config"],
       })
       .select()
       .single();

@@ -21,8 +21,7 @@ import { ThumbnailUpload } from "@/components/products/thumbnail-upload";
 import { CustomerFieldsSelector } from "@/components/products/customer-fields-selector";
 import { FreebieSelector } from "@/components/products/freebie-selector";
 import { SuccessMessage } from "@/components/products/success-message";
-import { ProductPreviewWrapper } from "@/components/preview/utils/product-preview-wrapper";
-import { LeadMagnetPreview } from "@/components/preview/lead-magnet/lead-magnet-preview";
+import { LeadMagnetPreviewWrapper } from "@/components/products/lead-magnet/lead-magnet-preview-wrapper";
 import { leadMagnetSchema, type LeadMagnetInput } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
 import { createLeadMagnetProduct } from "@/lib/products/actions";
@@ -43,6 +42,7 @@ export function CreateLeadMagnetForm({
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors },
     setError,
   } = useForm<LeadMagnetInput>({
@@ -65,11 +65,6 @@ export function CreateLeadMagnetForm({
       successMessage: "",
     },
   });
-
-  const watchedName = watch("name");
-  const watchedSubtitle = watch("subtitle");
-  const watchedButtonText = watch("buttonText");
-  const watchedCustomerFields = watch("customerFields");
 
   const onSubmit = async (
     data: Omit<LeadMagnetInput, 'status'>,
@@ -181,10 +176,9 @@ export function CreateLeadMagnetForm({
             </div>
             <div className="sm:max-w-3xl md:col-span-2">
               <CustomerFieldsSelector
-                register={register}
-                errors={errors}
                 watch={watch}
                 setValue={setValue}
+                errors={errors.customerFields}
               />
             </div>
           </div>
@@ -300,17 +294,23 @@ export function CreateLeadMagnetForm({
       </div>
 
       {/* Preview Column */}
-      <div className="lg:w-96">
-        <ProductPreviewWrapper>
-          <LeadMagnetPreview
-            name={watchedName}
-            subtitle={watchedSubtitle}
-            buttonText={watchedButtonText}
-            thumbnail={thumbnailUrl}
-            customerFields={watchedCustomerFields}
+      <div className="lg:w-96 hidden lg:block">
+        <div className="sticky top-24">
+          <LeadMagnetPreviewWrapper
+            control={control}
+            thumbnailUrl={thumbnailUrl}
             designConfig={designConfig}
           />
-        </ProductPreviewWrapper>
+        </div>
+      </div>
+
+      {/* Mobile Preview */}
+      <div className="lg:hidden mt-8">
+        <LeadMagnetPreviewWrapper
+          control={control}
+          thumbnailUrl={thumbnailUrl}
+          designConfig={designConfig}
+        />
       </div>
     </div>
   );

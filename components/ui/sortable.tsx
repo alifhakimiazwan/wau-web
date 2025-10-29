@@ -256,7 +256,7 @@ function Kanban<T>({ value, onValueChange, getItemValue, children, className, on
   );
 
   return (
-    <KanbanContext.Provider value={contextValue}>
+    <KanbanContext.Provider value={contextValue as KanbanContextProps<unknown>}>
       <DndContext sensors={sensors} onDragStart={handleDragStart} onDragOver={handleDragOver} onDragEnd={handleDragEnd}>
         <div data-slot="kanban" data-dragging={activeId !== null} className={cn(className)}>
           {children}
@@ -619,7 +619,7 @@ function Sortable<T>({
               if (React.isValidElement(child) && (child.props as Record<string, unknown>).value === activeId) {
                 return React.cloneElement(child as React.ReactElement<Record<string, unknown>>, {
                   ...(child.props as Record<string, unknown>),
-                  className: cn((child.props as Record<string, unknown>).className, 'z-50 shadow-lg'),
+                  className: cn((child.props as Record<string, unknown>).className as string, 'z-50 shadow-lg'),
                 });
               }
               return null;

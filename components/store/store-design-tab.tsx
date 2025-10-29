@@ -39,13 +39,11 @@ export function StoreDesignTab({
           design,
         });
 
-        const result = await data.json();
-
-        if (result.success) {
+        if (data.success) {
           toast.success("Design saved successfully!");
           router.refresh();
         } else {
-          toast.error(result.error || "Failed to save design");
+          toast.error(data.error || "Failed to save design");
         }
       } catch (error) {
         console.error("Save error:", error);

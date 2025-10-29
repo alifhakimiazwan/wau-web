@@ -46,7 +46,7 @@ export function ProfileCard({ store, socialLinks = [] }: ProfileCardProps) {
               className="object-cover"
             />
             <AvatarFallback className="text-lg font-semibold rounded-3xl">
-              {getInitials(store.name)}
+              {getInitials(store.name || "")}
             </AvatarFallback>
           </Avatar>
         </div>

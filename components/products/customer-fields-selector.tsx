@@ -1,24 +1,33 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldDescription } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError } from "@/components/ui/field";
 import { Card } from "@/components/ui/card";
+import type { UseFormWatch, UseFormSetValue, FieldErrors, Path } from "react-hook-form";
 
-// Simple props without generic types - just take the values we need
-interface CustomerFieldsSelectorProps {
-  watch: (field: string) => boolean;
-  setValue: (field: string, value: boolean) => void;
-  errors?: { message?: string };
+// Generic type for any form that has customerFields
+type FormWithCustomerFields = {
+  customerFields: {
+    email: boolean;
+    name: boolean;
+    phone: boolean;
+  };
+};
+
+interface CustomerFieldsSelectorProps<T extends FormWithCustomerFields> {
+  watch: UseFormWatch<T>;
+  setValue: UseFormSetValue<T>;
+  errors?: FieldErrors<T["customerFields"]>;
 }
 
-export function CustomerFieldsSelector({
+export function CustomerFieldsSelector<T extends FormWithCustomerFields>({
   watch,
   setValue,
   errors,
-}: CustomerFieldsSelectorProps) {
-  const emailChecked = watch("customerFields.email");
-  const nameChecked = watch("customerFields.name");
-  const phoneChecked = watch("customerFields.phone");
+}: CustomerFieldsSelectorProps<T>) {
+  const emailChecked = watch("customerFields.email" as Path<T>) as boolean;
+  const nameChecked = watch("customerFields.name" as Path<T>) as boolean;
+  const phoneChecked = watch("customerFields.phone" as Path<T>) as boolean;
 
   return (
     <Field>
@@ -29,7 +38,7 @@ export function CustomerFieldsSelector({
             id="customerFields.email"
             checked={emailChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.email", checked === true)
+              setValue("customerFields.email" as Path<T>, (checked === true) as never)
             }
           />
           <label
@@ -46,7 +55,7 @@ export function CustomerFieldsSelector({
             id="customerFields.name"
             checked={nameChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.name", checked === true)
+              setValue("customerFields.name" as Path<T>, (checked === true) as never)
             }
           />
           <label
@@ -63,7 +72,7 @@ export function CustomerFieldsSelector({
             id="customerFields.phone"
             checked={phoneChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.phone", checked === true)
+              setValue("customerFields.phone" as Path<T>, (checked === true) as never)
             }
           />
           <label
@@ -74,12 +83,6 @@ export function CustomerFieldsSelector({
           </label>
         </div>
       </Card>
-
-      {errors && (
-        <FieldDescription className="text-destructive">
-          {errors.message}
-        </FieldDescription>
-      )}
     </Field>
   );
 }

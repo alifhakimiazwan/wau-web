@@ -219,18 +219,6 @@ export function SortableProductsList({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {onEdit && (
-                      <DropdownMenuItem onClick={() => onEdit(product)}>
-                        <Edit className="h-4 w-4 mr-2" />
-                        Edit
-                      </DropdownMenuItem>
-                    )}
-                    {onPreview && (
-                      <DropdownMenuItem onClick={() => onPreview(product)}>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Preview
-                      </DropdownMenuItem>
-                    )}
                     <DropdownMenuItem
                       onClick={() => handleDelete(product)}
                       className="text-destructive focus:text-destructive"

@@ -25,10 +25,7 @@ import { SubtitleField } from "@/components/products/shared/subtitle-field";
 import { ButtonTextField } from "@/components/products/shared/button-text-field";
 import { URLField } from "@/components/products/shared/url-field";
 import { ThumbnailUpload } from "@/components/products/thumbnail-upload";
-import { ProductPreviewWrapper } from "@/components/preview/utils/product-preview-wrapper";
-import { LinkClassicPreview } from "@/components/preview/link/link-classic-preview";
-import { LinkCalloutPreview } from "@/components/preview/link/link-callout-preview";
-import { LinkEmbedPreview } from "@/components/preview/link/link-embed-preview";
+import { LinkPreview } from "@/components/products/links/link-preview";
 
 import {
   linkSchema,
@@ -52,6 +49,7 @@ export function CreateLinkForm({ designConfig }: CreateLinkFormProps) {
     handleSubmit,
     watch,
     setValue,
+    control,
     formState: { errors },
     setError,
   } = useForm<LinkInput>({
@@ -66,12 +64,8 @@ export function CreateLinkForm({ designConfig }: CreateLinkFormProps) {
     },
   });
 
-  // Watch form values for real-time preview
+  // Watch only fields needed for conditional rendering in the form
   const watchedStyle = watch("style");
-  const watchedName = watch("name");
-  const watchedSubtitle = watch("subtitle");
-  const watchedButtonText = watch("buttonText");
-  const watchedUrl = watch("url");
 
   const onSubmit = async (data: LinkInput, status: "draft" | "published") => {
     startTransition(async () => {
@@ -256,29 +250,24 @@ export function CreateLinkForm({ designConfig }: CreateLinkFormProps) {
       </div>
 
       {/* Preview Section */}
-      <ProductPreviewWrapper>
-        {watchedStyle === "classic" && (
-          <LinkClassicPreview
-            name={watchedName}
-            thumbnail={thumbnailUrl}
-            url={watchedUrl}
+      <div className="hidden lg:block">
+        <div className="sticky top-24">
+          <LinkPreview
+            control={control}
+            thumbnailUrl={thumbnailUrl}
             designConfig={designConfig}
           />
-        )}
-        {watchedStyle === "callout" && (
-          <LinkCalloutPreview
-            name={watchedName}
-            subtitle={watchedSubtitle}
-            buttonText={watchedButtonText}
-            thumbnail={thumbnailUrl}
-            url={watchedUrl}
-            designConfig={designConfig}
-          />
-        )}
-        {watchedStyle === "embed" && (
-          <LinkEmbedPreview url={watchedUrl} designConfig={designConfig} />
-        )}
-      </ProductPreviewWrapper>
+        </div>
+      </div>
+
+      {/* Mobile Preview */}
+      <div className="lg:hidden">
+        <LinkPreview
+          control={control}
+          thumbnailUrl={thumbnailUrl}
+          designConfig={designConfig}
+        />
+      </div>
     </div>
   );
 }
