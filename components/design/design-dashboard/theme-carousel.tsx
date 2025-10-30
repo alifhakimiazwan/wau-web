@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
 import { AVAILABLE_THEMES } from "@/lib/design/types";
+import { Check } from "lucide-react";
 
 interface ThemeCarouselProps {
   selectedThemeId: string;
@@ -24,42 +25,39 @@ export function ThemeCarousel({
   const [api, setApi] = React.useState<CarouselApi>();
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-2">
+    <div className="w-full max-w-5xl mx-auto">
       <Carousel
         setApi={setApi}
         className="w-full p-0"
         opts={{ loop: true, align: "center" }}
       >
-        <CarouselContent className="-ml-4">
+        <CarouselContent className="ml-0 gap-3 px-3">
           {AVAILABLE_THEMES.map((theme) => (
-            <CarouselItem key={theme.id} className="basis-1/3 pl-4">
+            <CarouselItem key={theme.id} className="basis-1/3 pl-0 pr-0">
               <div
                 onClick={() => onThemeSelect(theme.id)}
-                className="cursor-pointer"
+                className="cursor-pointer relative"
               >
                 {theme.thumbnail.startsWith("/") ? (
                   <img
                     src={theme.thumbnail}
                     alt={theme.name}
-                    className={cn(
-                      "w-full aspect-[9/16] object-contain rounded-2xl transition-all duration-200",
-                      selectedThemeId === theme.id
-                        ? "ring-4 ring-blue-500 ring-inset"
-                        : "ring-0 hover:ring-2 hover:ring-muted-foreground/20 ring-inset"
-                    )}
+                    className="w-full aspect-[9/16] object-contain transition-all duration-200"
                   />
                 ) : (
                   <div
-                    className={cn(
-                      "w-full aspect-[9/16] rounded-2xl transition-all duration-200",
-                      selectedThemeId === theme.id
-                        ? "ring-4 ring-blue-500 ring-inset"
-                        : "ring-0 hover:ring-2 hover:ring-muted-foreground/20 ring-inset"
-                    )}
+                    className="w-full aspect-[9/16] transition-all duration-200"
                     style={{
                       background: theme.thumbnail,
                     }}
                   />
+                )}
+
+                {/* Checkmark Badge */}
+                {selectedThemeId === theme.id && (
+                  <div className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow-lg">
+                    <Check className="w-5 h-5 text-white" strokeWidth={3} />
+                  </div>
                 )}
               </div>
             </CarouselItem>
