@@ -9,7 +9,6 @@ import {
     IconBrandDiscord,
     IconMail,
     IconWorld,
-    IconMapPin,
   } from "@tabler/icons-react"
 
 export const getSocialIcon = (platform: string) => {

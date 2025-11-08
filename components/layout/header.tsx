@@ -92,24 +92,22 @@ export const HeroHeader = () => {
                 <Button
                   asChild
                   variant="outline"
-                  size="sm"
-                  className="rounded-full"
+                  size="default"
+                  className="rounded-full border-none"
                 >
                   <Link href="/login">
                     <Typography
+                      variant="h6"
                       font="serif"
-                      className="font-semibold tracking-tighter"
+                      className="text-primary"
                     >
                       Login
                     </Typography>
                   </Link>
                 </Button>
-                <Button asChild size="sm" className="rounded-full">
+                <Button asChild size="default" className="rounded-full">
                   <Link href="/signup">
-                    <Typography
-                      font="serif"
-                      className="font-semibold tracking-tighter"
-                    >
+                    <Typography font="serif" variant="h6">
                       Sign Up
                     </Typography>
                   </Link>

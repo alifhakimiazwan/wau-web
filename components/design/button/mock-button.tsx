@@ -1,6 +1,6 @@
 "use client";
 
-import { LinkButton } from "@/components/design/button/link-button";
+import { LinkButton } from "@/components/ui/themed/button";
 import type { ButtonStyle } from "@/lib/design/types";
 import { MOCK_LINKS } from "../../../lib/design/constants";
 

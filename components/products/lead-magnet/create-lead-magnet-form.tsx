@@ -24,18 +24,51 @@ import { SuccessMessage } from "@/components/products/success-message";
 import { LeadMagnetPreviewWrapper } from "@/components/products/lead-magnet/lead-magnet-preview-wrapper";
 import { leadMagnetSchema, type LeadMagnetInput } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
-import { createLeadMagnetProduct } from "@/lib/products/actions";
+import type { Product } from "@/lib/products/types";
+import { createLeadMagnetProduct, updateLeadMagnetProduct } from "@/lib/products/actions";
 
 interface CreateLeadMagnetFormProps {
   designConfig: DesignCustomization | null;
+  productId?: string;
+  initialData?: Product;
 }
 
 export function CreateLeadMagnetForm({
   designConfig,
+  productId,
+  initialData,
 }: CreateLeadMagnetFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const isEditMode = !!productId && !!initialData;
+
+  // Type-safe extraction of lead magnet config from JSONB
+  const getLeadMagnetConfig = () => {
+    if (!isEditMode || !initialData?.type_config) {
+      return null;
+    }
+
+    const config = initialData.type_config as Record<string, unknown>;
+    return {
+      subtitle: (config.subtitle as string) || "",
+      buttonText: (config.buttonText as string) || "",
+      customerFields: (config.customerFields as {
+        email: boolean;
+        name: boolean;
+        phone: boolean;
+      }) || { email: true, name: false, phone: false },
+      freebieType: (config.freebieType as "link" | "file") || "link",
+      freebieLink: (config.freebieLink as { url: string; title: string }) || undefined,
+      freebieFile: (config.freebieFile as { url: string; filename: string; size: number }) || undefined,
+      successMessage: (config.successMessage as string) || "",
+    };
+  };
+
+  const leadMagnetConfig = getLeadMagnetConfig();
+
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(
+    isEditMode && initialData ? (initialData.thumbnail_url || null) : null
+  );
 
   const {
     register,
@@ -47,27 +80,42 @@ export function CreateLeadMagnetForm({
     setError,
   } = useForm<LeadMagnetInput>({
     resolver: zodResolver(leadMagnetSchema),
-    defaultValues: {
-      name: "",
-      subtitle: "",
-      buttonText: "",
+    defaultValues: isEditMode && leadMagnetConfig ? {
+      name: initialData.name || "",
+      subtitle: leadMagnetConfig.subtitle,
+      buttonText: leadMagnetConfig.buttonText,
+      thumbnail: initialData.thumbnail_url || "",
+      customerFields: leadMagnetConfig.customerFields,
+      freebieType: leadMagnetConfig.freebieType,
+      ...(leadMagnetConfig.freebieType === "link" && leadMagnetConfig.freebieLink
+        ? { freebieLink: leadMagnetConfig.freebieLink }
+        : {}),
+      ...(leadMagnetConfig.freebieType === "file" && leadMagnetConfig.freebieFile
+        ? { freebieFile: leadMagnetConfig.freebieFile }
+        : {}),
+      successMessage: leadMagnetConfig.successMessage,
+      status: (initialData.status as "draft" | "published") || "draft",
+    } : {
+      name: "Get My Free [Guide/Template/Checklist]",
+      subtitle: "Download your free resource instantly",
+      buttonText: "Get It Free",
       thumbnail: "",
       customerFields: {
-        email: false,
+        email: true,
         name: false,
         phone: false,
       },
       freebieType: "link",
       freebieLink: {
         url: "",
-        title: "",
+        title: "My Free Resource",
       },
-      successMessage: "",
+      successMessage: "Thank you! Check your email for the download link.",
     },
   });
 
   const onSubmit = async (
-    data: Omit<LeadMagnetInput, 'status'>,
+    data: LeadMagnetInput,
     status: "draft" | "published"
   ) => {
     startTransition(async () => {
@@ -78,29 +126,33 @@ export function CreateLeadMagnetForm({
           status,
         };
 
-        const result = await createLeadMagnetProduct(payload);
+        const result = isEditMode && productId
+          ? await updateLeadMagnetProduct(productId, payload)
+          : await createLeadMagnetProduct(payload);
 
         if (!result.success) {
-          throw new Error(result.error || "Failed to create lead magnet");
+          throw new Error(result.error || `Failed to ${isEditMode ? 'update' : 'create'} lead magnet`);
         }
 
         toast.success(
-          status === "draft"
+          isEditMode
+            ? "Lead magnet updated successfully!"
+            : status === "draft"
             ? "Lead magnet saved as draft!"
             : "Lead magnet published successfully!"
         );
-        router.push("/store/products");
+        router.push("/store");
       } catch (error) {
         toast.error(
           error instanceof Error
             ? error.message
-            : "Failed to create lead magnet"
+            : `Failed to ${isEditMode ? 'update' : 'create'} lead magnet`
         );
         setError("root", {
           message:
             error instanceof Error
               ? error.message
-              : "Failed to create lead magnet",
+              : `Failed to ${isEditMode ? 'update' : 'create'} lead magnet`,
         });
       }
     });
@@ -267,7 +319,7 @@ export function CreateLeadMagnetForm({
                 {isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving...
+                    {isEditMode ? "Updating..." : "Saving..."}
                   </>
                 ) : (
                   "Save Draft"
@@ -282,10 +334,10 @@ export function CreateLeadMagnetForm({
                 {isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Publishing...
+                    {isEditMode ? "Updating..." : "Publishing..."}
                   </>
                 ) : (
-                  "Publish Lead Magnet"
+                  isEditMode ? "Update Lead Magnet" : "Publish Lead Magnet"
                 )}
               </Button>
             </div>

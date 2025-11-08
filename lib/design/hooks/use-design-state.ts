@@ -31,6 +31,7 @@ export function useDesignState({
         updateDesign({
           themeId,
           fontFamily: theme.fontFamily || design.fontFamily,
+          blockShape: theme.blockShape || design.blockShape,  // Apply theme's default blockShape
           colors: {
             primary: theme.colors.background,
             accent: theme.colors.accent,
@@ -38,7 +39,7 @@ export function useDesignState({
         });
       }
     },
-    [design.fontFamily, updateDesign]
+    [design.fontFamily, design.blockShape, updateDesign]
   );
 
   const currentTheme = AVAILABLE_THEMES.find((t) => t.id === design.themeId);

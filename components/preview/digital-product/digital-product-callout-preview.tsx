@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { LinkButton } from "@/components/design/button/link-button";
+import { LinkButton } from "@/components/ui/themed/button";
 import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import type { DesignCustomization } from "@/lib/design/types";
@@ -17,6 +17,8 @@ interface DigitalProductCalloutPreviewProps {
   discountedPrice?: number;
   hasDiscount?: boolean;
   designConfig?: DesignCustomization | null;
+  cardBackgroundColor?: string;
+  cardShadow?: boolean;
 }
 
 export function DigitalProductCalloutPreview({
@@ -28,6 +30,8 @@ export function DigitalProductCalloutPreview({
   discountedPrice,
   hasDiscount = false,
   designConfig,
+  cardBackgroundColor = "#FFFFFF",
+  cardShadow = false,
 }: DigitalProductCalloutPreviewProps) {
   const borderRadius = getBorderRadius(designConfig);
   const topBorderRadius = getBorderRadius(designConfig, "top");
@@ -37,8 +41,19 @@ export function DigitalProductCalloutPreview({
     hasDiscount && discountedPrice && discountedPrice < price;
 
   return (
-    <div className="w-full max-w-md mx-auto p-6">
-      <Card className={cn("overflow-hidden py-0 gap-0", borderRadius)}>
+    <div className="w-full max-w-md mx-auto">
+      <Card
+        className={cn(
+          "overflow-hidden py-0 gap-0 border-1",
+          borderRadius
+        )}
+        style={{
+          backgroundColor: cardBackgroundColor,
+          boxShadow: cardShadow
+            ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 2px 5px -2px rgba(0, 0, 0, 0.2)"
+            : undefined,
+        }}
+      >
         {/* Thumbnail */}
         {cardThumbnail ? (
           <div

@@ -29,11 +29,13 @@ export async function signup(formData: FormData): Promise<AuthResponse> {
         })
 
         if (signupError) {
+            console.error('Signup error:', signupError)
             return {
                 success: false,
                 error: signupError.message
             }
         }
+
         if (authData.user) {
             if (authData.user.identities?.length === 0) {
                 return {
@@ -41,26 +43,31 @@ export async function signup(formData: FormData): Promise<AuthResponse> {
                     error: 'An account with this email already exists'
                 }
             }
-        return {
-            success: true,
-            message: 'Account created successfully'
-        }
-    }
-    return {
-        success: false,
-        error: 'An error occurred while creating your account'
-    }
-    } catch (error) {
-        if (error instanceof z.ZodError) {
+
             return {
-                success: false, error: error.issues[0].message
+                success: true,
+                message: 'Account created successfully'
             }
         }
+
+        return {
+            success: false,
+            error: 'An error occurred while creating your account'
+        }
+    } catch (error) {
+        console.error('Signup exception:', error)
+
+        if (error instanceof z.ZodError) {
+            return {
+                success: false,
+                error: error.issues[0].message
+            }
+        }
+
         return {
             success: false,
             error: error instanceof Error ? error.message : 'An unexpected error occurred'
         }
-
     }
 }
 

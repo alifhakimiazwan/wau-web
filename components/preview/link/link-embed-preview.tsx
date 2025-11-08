@@ -10,11 +10,15 @@ import { getYoutubeEmbedUrl, getSpotifyEmbedUrl } from "@/lib/preview/actions";
 interface LinkEmbedPreviewProps {
   url?: string;
   designConfig?: DesignCustomization | null;
+  cardBackgroundColor?: string;
+  cardShadow?: boolean;
 }
 
 export function LinkEmbedPreview({
   url = "https://example.com",
   designConfig,
+  cardBackgroundColor = '#FFFFFF',
+  cardShadow = false,
 }: LinkEmbedPreviewProps) {
   const borderRadius = getBorderRadius(designConfig);
 
@@ -24,8 +28,19 @@ export function LinkEmbedPreview({
   const isEmbeddable = youtubeEmbedUrl || spotifyEmbedUrl;
 
   return (
-    <div className="w-full max-w-md mx-auto p-6">
-      <Card className={cn("overflow-hidden py-0 border-none", borderRadius)}>
+    <div className="w-full max-w-md mx-auto">
+      <Card
+        className={cn(
+          "overflow-hidden py-0 border-1",
+          borderRadius
+        )}
+        style={{
+          backgroundColor: cardBackgroundColor,
+          boxShadow: cardShadow
+            ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 2px 5px -2px rgba(0, 0, 0, 0.2)"
+            : undefined,
+        }}
+      >
         <div className="space-y-4">
           {youtubeEmbedUrl ? (
             <div className="w-full aspect-video">

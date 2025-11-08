@@ -40,8 +40,12 @@ export function ProductDeliverySection({
   setValue,
 }: ProductDeliverySectionProps) {
   const productType = watch("productType") || "link";
+  const existingFile = watch("productFile");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Check if we have either a new file or existing file data
+  const hasFile = uploadedFile || existingFile;
 
   const handleFileUpload = useCallback(
     async (files: File[]) => {
@@ -146,7 +150,7 @@ export function ProductDeliverySection({
               Upload your digital product file (PDF or ZIP, max 50MB)
             </FieldDescription>
 
-            {!uploadedFile ? (
+            {!hasFile ? (
               <Dropzone
                 onDrop={handleFileUpload}
                 accept={{
@@ -185,9 +189,16 @@ export function ProductDeliverySection({
                   <div className="flex items-center gap-3">
                     <FileText className="w-10 h-10 text-primary" />
                     <div>
-                      <p className="font-medium text-sm">{uploadedFile.name}</p>
+                      <p className="font-medium text-sm">
+                        {uploadedFile?.name || existingFile?.filename || "Unknown file"}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        {(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB
+                        {uploadedFile
+                          ? `${(uploadedFile.size / (1024 * 1024)).toFixed(2)} MB`
+                          : existingFile?.size
+                          ? `${(existingFile.size / (1024 * 1024)).toFixed(2)} MB`
+                          : "Unknown size"
+                        }
                       </p>
                     </div>
                   </div>

@@ -1,7 +1,7 @@
 import { requireStore } from "@/lib/guards/onboarding-guard";
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { AppSidebar } from "@/components/dashboard/sidebar/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
+import { SiteHeader } from "@/components/dashboard/sidebar/site-header";
 export default async function DashboardLayout({
   children,
 }: {
@@ -29,7 +29,7 @@ export default async function DashboardLayout({
       <SidebarInset>
         <SiteHeader />
 
-        <main className="w-full">{children}</main>
+        <main className="w-full min-h-screen">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

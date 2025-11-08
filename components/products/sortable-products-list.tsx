@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   Sortable,
   SortableItem,
@@ -17,6 +18,8 @@ import {
   Trash2,
   Eye,
   Package,
+  LayoutList,
+  Pencil,
 } from "lucide-react";
 import Image from "next/image";
 import {
@@ -35,10 +38,26 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { updateProductPositions, deleteProduct } from "@/lib/products/actions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  updateProductPositions,
+  deleteProduct,
+  updateSection,
+  deleteSection,
+} from "@/lib/products/actions";
 import { toast } from "sonner";
 import type { Database } from "@/types/database.types";
 import { Typography } from "@/components/ui/typography";
+import { isSection } from "@/lib/products/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
 
@@ -71,10 +90,33 @@ export function SortableProductsList({
   onEdit,
   onPreview,
 }: SortableProductsListProps) {
+  const router = useRouter();
   const [products, setProducts] = useState(initialProducts);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [sectionToEdit, setSectionToEdit] = useState<Product | null>(null);
+  const [sectionTitle, setSectionTitle] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditingSection, setIsEditingSection] = useState(false);
+
+  // Helper function to get edit route based on product type
+  const getEditRoute = (product: Product): string => {
+    if (!product.type) return "/store/products";
+
+    const routes = {
+      link: `/store/products/links/${product.id}`,
+      lead_magnet: `/store/products/lead-magnet/${product.id}`,
+      digital_product: `/store/products/digital-product/${product.id}`,
+    };
+
+    return routes[product.type as keyof typeof routes] || "/store/products";
+  };
+
+  // Handle product card click to edit
+  const handleProductClick = (product: Product) => {
+    if (isSection(product)) return; // Don't navigate for sections
+    router.push(getEditRoute(product));
+  };
 
   const handleValueChange = (newProducts: Product[]) => {
     setProducts(newProducts);
@@ -90,6 +132,7 @@ export function SortableProductsList({
         toast.error(result.error || "Failed to update product order");
       } else {
         toast.success("Product order updated");
+        router.refresh(); // Refresh server data
       }
     });
   };
@@ -102,17 +145,54 @@ export function SortableProductsList({
     if (!productToDelete) return;
 
     setIsDeleting(true);
-    const result = await deleteProduct(productToDelete.id);
+
+    // Check if it's a section or product
+    const isItemSection = isSection(productToDelete);
+    const result = isItemSection
+      ? await deleteSection(productToDelete.id)
+      : await deleteProduct(productToDelete.id);
 
     if (result.success) {
-      setProducts((prev) => prev.filter((p) => p.id !== productToDelete.id));
-      toast.success("Product deleted successfully");
+      toast.success(
+        isItemSection
+          ? "Section deleted successfully"
+          : "Product deleted successfully"
+      );
+      setProductToDelete(null);
+      setIsDeleting(false);
+      router.refresh(); // Refresh server data
     } else {
-      toast.error(result.error || "Failed to delete product");
+      toast.error(
+        result.error ||
+          `Failed to delete ${isItemSection ? "section" : "product"}`
+      );
+      setIsDeleting(false);
+      setProductToDelete(null);
     }
+  };
 
-    setIsDeleting(false);
-    setProductToDelete(null);
+  const handleEditSection = (section: Product) => {
+    setSectionToEdit(section);
+    setSectionTitle(section.name);
+  };
+
+  const confirmEditSection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sectionToEdit) return;
+
+    setIsEditingSection(true);
+    const result = await updateSection(sectionToEdit.id, sectionTitle);
+
+    if (result.success) {
+      toast.success("Section updated successfully");
+      setSectionToEdit(null);
+      setSectionTitle("");
+      setIsEditingSection(false);
+      router.refresh();
+    } else {
+      toast.error(result.error || "Failed to update section");
+      setIsEditingSection(false);
+    }
   };
 
   const getItemValue = (product: Product) => product.id;
@@ -144,6 +224,63 @@ export function SortableProductsList({
         className="space-y-3"
       >
         {products.map((product) => {
+          // Check if this is a section
+          const itemIsSection = isSection(product);
+
+          if (itemIsSection) {
+            // Render section header
+            return (
+              <SortableItem key={product.id} value={product.id}>
+                <div className="flex items-center gap-4 p-3 bg-muted/50 border border-border rounded-lg hover:bg-muted transition-colors">
+                  {/* Drag Handle */}
+                  <SortableItemHandle className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing">
+                    <GripVertical className="h-5 w-5" />
+                  </SortableItemHandle>
+
+                  {/* Section Icon */}
+                  <div className="flex-shrink-0">
+                    <div className="w-10 h-10 rounded-md bg-background flex items-center justify-center">
+                      <LayoutList className="h-5 w-5 text-primary" />
+                    </div>
+                  </div>
+
+                  {/* Section Title */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-lg truncate">
+                      {product.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">Section</p>
+                  </div>
+
+                  {/* Actions Menu */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleEditSection(product)}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(product)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </SortableItem>
+            );
+          }
+
+          // Render regular product
           const Icon =
             productTypeIcons[product.type as keyof typeof productTypeIcons];
           const typeLabel =
@@ -153,9 +290,15 @@ export function SortableProductsList({
 
           return (
             <SortableItem key={product.id} value={product.id}>
-              <div className="flex items-center gap-4 p-4 bg-background border border-border rounded-lg hover:bg-accent/50 transition-colors">
+              <div
+                className="flex items-center gap-4 p-4 bg-background border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
+                onClick={() => handleProductClick(product)}
+              >
                 {/* Drag Handle */}
-                <SortableItemHandle className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing">
+                <SortableItemHandle
+                  className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <GripVertical className="h-5 w-5" />
                 </SortableItemHandle>
 
@@ -210,22 +353,30 @@ export function SortableProductsList({
                 </div>
 
                 {/* Actions Menu */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => handleDelete(product)}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <Trash2 className="h-4 w-4 mr-2 text-red-500" />
-                      Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleProductClick(product)}
+                      >
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(product)}
+                        className="text-destructive focus:text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             </SortableItem>
           );
@@ -238,7 +389,13 @@ export function SortableProductsList({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Product?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete{" "}
+              {productToDelete && isSection(productToDelete)
+                ? "Section"
+                : "Product"}
+              ?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Are you sure you want to delete {productToDelete?.name}? This
               action cannot be undone.
@@ -256,6 +413,47 @@ export function SortableProductsList({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Section Dialog */}
+      <Dialog
+        open={!!sectionToEdit}
+        onOpenChange={(open) => !open && setSectionToEdit(null)}
+      >
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Section</DialogTitle>
+            <DialogDescription>Update the section title</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={confirmEditSection}>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="edit-title">Section Title</Label>
+                <Input
+                  id="edit-title"
+                  value={sectionTitle}
+                  onChange={(e) => setSectionTitle(e.target.value)}
+                  maxLength={100}
+                  disabled={isEditingSection}
+                  autoFocus
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setSectionToEdit(null)}
+                disabled={isEditingSection}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isEditingSection}>
+                {isEditingSection ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

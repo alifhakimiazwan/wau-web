@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { LinkButton } from "@/components/design/button/link-button";
+import { LinkButton } from "@/components/ui/themed/button";
 import { Link2 } from "lucide-react";
 import Image from "next/image";
 import type { DesignCustomization } from "@/lib/design/types";
@@ -15,6 +15,8 @@ interface LinkCalloutPreviewProps {
   thumbnail?: string | null;
   url?: string;
   designConfig?: DesignCustomization | null;
+  cardBackgroundColor?: string;
+  cardShadow?: boolean;
 }
 
 export function LinkCalloutPreview({
@@ -24,13 +26,26 @@ export function LinkCalloutPreview({
   thumbnail,
   url = "https://example.com",
   designConfig,
+  cardBackgroundColor = "#FFFFFF",
+  cardShadow = false,
 }: LinkCalloutPreviewProps) {
   const borderRadius = getBorderRadius(designConfig);
   const topBorderRadius = getBorderRadius(designConfig, "top");
 
   return (
-    <div className="w-full max-w-md mx-auto p-6">
-      <Card className={cn("overflow-hidden py-0 gap-0", borderRadius)}>
+    <div className="w-full max-w-md mx-auto">
+      <Card
+        className={cn(
+          "overflow-hidden py-0 gap-0 border-1",
+          borderRadius
+        )}
+        style={{
+          backgroundColor: cardBackgroundColor,
+          boxShadow: cardShadow
+            ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 2px 5px -2px rgba(0, 0, 0, 0.2)"
+            : undefined,
+        }}
+      >
         {/* Thumbnail */}
         {thumbnail ? (
           <div

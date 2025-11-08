@@ -13,6 +13,8 @@ import {
 import type { Database } from "@/types/database.types";
 import { ButtonStyle } from "../design/types";
 
+export type Product = Database["public"]["Tables"]["products"]["Row"];
+
 export interface StorefrontPreviewProps {
     name: string;
     bio?: string;
@@ -23,6 +25,7 @@ export interface StorefrontPreviewProps {
       platform: string;
       url: string;
     }>;
+    products?: Product[];
     theme?: string;
     fontFamily?: string;
     blockShape?: string;

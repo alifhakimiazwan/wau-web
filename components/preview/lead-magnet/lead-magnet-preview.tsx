@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { LinkButton } from "@/components/design/button/link-button";
+import { LinkButton } from "@/components/ui/themed/button";
 import { Magnet } from "lucide-react";
 import Image from "next/image";
 import type { DesignCustomization } from "@/lib/design/types";
@@ -25,6 +25,8 @@ interface LeadMagnetPreviewProps {
   thumbnail?: string | null;
   customerFields?: CustomerFields;
   designConfig?: DesignCustomization | null;
+  cardBackgroundColor?: string;
+  cardShadow?: boolean;
 }
 
 export function LeadMagnetPreview({
@@ -34,14 +36,27 @@ export function LeadMagnetPreview({
   thumbnail,
   customerFields = { email: false, name: false, phone: false },
   designConfig,
+  cardBackgroundColor = '#FFFFFF',
+  cardShadow = false,
 }: LeadMagnetPreviewProps) {
   const borderRadius = getBorderRadius(designConfig);
   const inputBorderRadius = getInputBorderRadius(designConfig);
   const topBorderRadius = getBorderRadius(designConfig, "top");
 
   return (
-    <div className="w-full max-w-md mx-auto p-6">
-      <Card className={cn("overflow-hidden py-0 gap-0", borderRadius)}>
+    <div className="w-full max-w-md mx-auto">
+      <Card
+        className={cn(
+          "overflow-hidden py-0 gap-0 border-1",
+          borderRadius
+        )}
+        style={{
+          backgroundColor: cardBackgroundColor,
+          boxShadow: cardShadow
+            ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 2px 5px -2px rgba(0, 0, 0, 0.2)"
+            : undefined,
+        }}
+      >
         {/* Thumbnail - 1/2 on top - Full width, no padding */}
         {thumbnail ? (
           <div

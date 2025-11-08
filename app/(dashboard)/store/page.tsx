@@ -5,12 +5,11 @@ import { getStoreProducts } from "@/lib/products/actions";
 import {
   Tabs,
   TabsContent,
-  TabsContents,
   TabsList,
   TabsTrigger,
-} from "@/components/animate-ui/components/radix/tabs";
-import { StoreDetailsTab } from "@/components/store/store-details-tab";
-import { StoreDesignTab } from "@/components/store/store-design-tab";
+} from "@/components/ui/tabs";
+import { StoreDetailsTab } from "@/components/dashboard/store/store-details-tab";
+import { StoreDesignTab } from "@/components/dashboard/store/store-design-tab";
 import { Store, Palette } from "lucide-react";
 
 interface StorePageProps {
@@ -38,7 +37,7 @@ export default async function StorePage({ searchParams }: StorePageProps) {
   const activeTab = params.tab || "details";
 
   return (
-    <div className="space-y-6 p-5">
+    <div className="space-y-6 p-5 min-h-screen">
       <Tabs defaultValue={activeTab} className="space-y-4">
         <TabsList className="gap-2">
           <TabsTrigger value="details">
@@ -51,19 +50,23 @@ export default async function StorePage({ searchParams }: StorePageProps) {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContents>
-          <TabsContent value="details" className="space-y-4">
-            <StoreDetailsTab store={store} socialLinks={socialLinks || []} products={products} />
-          </TabsContent>
+        <TabsContent value="details" className="space-y-4">
+          <StoreDetailsTab
+            store={store}
+            socialLinks={socialLinks || []}
+            products={products}
+            designConfig={initialDesign ?? undefined}
+          />
+        </TabsContent>
 
-          <TabsContent value="design" className="space-y-4">
-            <StoreDesignTab
-              store={store}
-              socialLinks={socialLinks || []}
-              initialDesign={initialDesign ?? undefined}
-            />
-          </TabsContent>
-        </TabsContents>
+        <TabsContent value="design" className="space-y-4">
+          <StoreDesignTab
+            store={store}
+            socialLinks={socialLinks || []}
+            products={products}
+            initialDesign={initialDesign ?? undefined}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );

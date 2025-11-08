@@ -18,7 +18,7 @@ const typographyVariants = cva("", {
       lead: "text-xl text-muted-foreground",
       large: "text-lg font-semibold",
       small: "text-sm font-medium leading-none",
-      muted: "text-sm text-muted-foreground",
+      muted: "text-xs text-muted-foreground",
       subtle: "text-xs text-muted-foreground",
     },
     font: {

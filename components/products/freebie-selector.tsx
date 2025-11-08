@@ -36,8 +36,12 @@ export function FreebieSelector({
   setValue,
 }: FreebieSelectorProps) {
   const freebieType = watch("freebieType") || "link";
+  const existingFile = watch("freebieFile");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Check if we have either a new file or existing file data
+  const hasFile = uploadedFile || existingFile;
 
   const handleFileUpload = useCallback(
     async (files: File[]) => {
@@ -143,7 +147,7 @@ export function FreebieSelector({
 
             <TabsContent value="file" className="mt-4">
               <Card className="p-4">
-                {!uploadedFile ? (
+                {!hasFile ? (
                   <div className="h-auto">
                     <Dropzone
                       onDrop={handleFileUpload}
@@ -180,10 +184,15 @@ export function FreebieSelector({
                     <FileText className="w-8 h-8 text-primary" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {uploadedFile.name}
+                        {uploadedFile?.name || existingFile?.filename || "Unknown file"}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                        {uploadedFile
+                          ? `${(uploadedFile.size / 1024 / 1024).toFixed(2)} MB`
+                          : existingFile?.size
+                          ? `${(existingFile.size / 1024 / 1024).toFixed(2)} MB`
+                          : "Unknown size"
+                        }
                       </p>
                     </div>
                     <Button

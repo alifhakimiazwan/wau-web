@@ -14,6 +14,8 @@ interface DigitalProductClassicPreviewProps {
   discountedPrice?: number;
   hasDiscount?: boolean;
   designConfig?: DesignCustomization | null;
+  cardBackgroundColor?: string;
+  cardShadow?: boolean;
 }
 
 export function DigitalProductClassicPreview({
@@ -23,6 +25,8 @@ export function DigitalProductClassicPreview({
   discountedPrice,
   hasDiscount = false,
   designConfig,
+  cardBackgroundColor = '#FFFFFF',
+  cardShadow = false,
 }: DigitalProductClassicPreviewProps) {
   const borderRadius = getBorderRadius(designConfig);
 
@@ -31,12 +35,18 @@ export function DigitalProductClassicPreview({
     hasDiscount && discountedPrice && discountedPrice < price;
 
   return (
-    <div className="w-full max-w-md p-2">
+    <div className="w-full max-w-md mx-auto">
       <Card
         className={cn(
-          "overflow-hidden cursor-pointer drop-shadow-accent hover:shadow-lg transition-shadow py-0",
+          "overflow-hidden cursor-pointer transition-shadow py-0 border-1",
           borderRadius
         )}
+        style={{
+          backgroundColor: cardBackgroundColor,
+          boxShadow: cardShadow
+            ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 2px 5px -2px rgba(0, 0, 0, 0.2)"
+            : undefined,
+        }}
       >
         <div className="flex items-center gap-3 p-3">
           {/* Thumbnail */}

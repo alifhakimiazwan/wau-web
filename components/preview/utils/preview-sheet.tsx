@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Eye } from "lucide-react";
 import { IPhoneMockup } from "../device-preview/device-mockup";
-import { StorefrontPreview } from "../layout/default/storefront-preview";
+import { StorefrontPreview } from "@/components/storefront/storefront";
 import type { StorefrontPreviewProps } from "@/lib/profile/types";
 
 //Mobile Preview Sheet

@@ -6,6 +6,20 @@ export type ProductUpdate = Database["public"]["Tables"]["products"]["Update"];
 
 export type ProductType = "link" | "lead_magnet" | "digital_product";
 export type ProductStatus = "draft" | "published";
+export type ItemType = "product" | "section";
+
+// Store items can be either products or sections
+export type StoreItem = Product;
+
+// Type guard to check if an item is a section
+export function isSection(item: StoreItem): boolean {
+  return item.item_type === "section";
+}
+
+// Type guard to check if an item is a product
+export function isProduct(item: StoreItem): boolean {
+  return item.item_type === "product";
+}
 
 // Base product config shared across all product types
 export interface BaseProductConfig {

@@ -7,7 +7,8 @@
 export { IPhoneMockup } from "./device-preview/device-mockup";
 export { DevicePreview } from "./device-preview/device-preview";
 export { MobilePreviewSheet } from "./utils/preview-sheet";
-export { StorefrontPreview } from "./layout/default/storefront-preview";
-export { HeroStorefrontPreview } from "./layout/hero/hero-storefront-preview";
+export { StorefrontPreview } from "../storefront/storefront";
+export { DefaultLayout } from "../storefront/layouts/default-layout";
+export { HeroLayout } from "../storefront/layouts/hero-layout";
 export { usePreviewTheme } from "@/lib/preview/hooks/use-preview-theme";
 export { useValidLinks } from "@/lib/preview/hooks/use-valid-links";

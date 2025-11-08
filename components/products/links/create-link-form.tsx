@@ -33,16 +33,41 @@ import {
   type LinkInput,
 } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
-import { createLinkProduct } from "@/lib/products/actions";
+import type { Product } from "@/lib/products/types";
+import { createLinkProduct, updateLinkProduct } from "@/lib/products/actions";
 
 interface CreateLinkFormProps {
   designConfig: DesignCustomization | null;
+  productId?: string;
+  initialData?: Product;
 }
 
-export function CreateLinkForm({ designConfig }: CreateLinkFormProps) {
+export function CreateLinkForm({ designConfig, productId, initialData }: CreateLinkFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const isEditMode = !!productId && !!initialData;
+
+  // Type-safe extraction of link config from JSONB
+  const getLinkConfig = () => {
+    if (!isEditMode || !initialData?.type_config) {
+      return null;
+    }
+
+    const config = initialData.type_config as Record<string, unknown>;
+    return {
+      style: (config.style as "classic" | "callout" | "embed") || "classic",
+      name: (config.name as string) || "",
+      subtitle: (config.subtitle as string) || "",
+      buttonText: (config.buttonText as string) || "",
+      url: (config.url as string) || "https://",
+    };
+  };
+
+  const linkConfig = getLinkConfig();
+
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(
+    isEditMode && initialData ? (initialData.thumbnail_url || null) : null
+  );
 
   const {
     register,
@@ -54,13 +79,21 @@ export function CreateLinkForm({ designConfig }: CreateLinkFormProps) {
     setError,
   } = useForm<LinkInput>({
     resolver: zodResolver(linkSchema),
-    defaultValues: {
+    defaultValues: isEditMode && linkConfig ? {
+      style: linkConfig.style,
+      name: linkConfig.name,
+      subtitle: linkConfig.subtitle,
+      buttonText: linkConfig.buttonText,
+      thumbnail: initialData.thumbnail_url || "",
+      url: linkConfig.url,
+      status: (initialData.status as "draft" | "published") || "draft",
+    } : {
       style: "classic",
-      name: "",
-      subtitle: "",
-      buttonText: "",
+      name: "Check Out My [Portfolio/Website/Project]",
+      subtitle: "Visit my website to learn more",
+      buttonText: "Visit Now",
       thumbnail: "",
-      url: "",
+      url: "https://",
     },
   });
 
@@ -78,23 +111,27 @@ export function CreateLinkForm({ designConfig }: CreateLinkFormProps) {
           status,
         };
 
-        const result = await createLinkProduct(payload);
+        const result = isEditMode && productId
+          ? await updateLinkProduct(productId, payload)
+          : await createLinkProduct(payload);
 
         if (!result.success) {
-          throw new Error(result.error || "Failed to create link");
+          throw new Error(result.error || `Failed to ${isEditMode ? 'update' : 'create'} link`);
         }
 
         toast.success(
-          status === "published"
+          isEditMode
+            ? "Link updated successfully!"
+            : status === "published"
             ? "Link published successfully!"
             : "Link saved as draft"
         );
 
-        router.push("/store/products");
+        router.push("/store");
       } catch (error) {
         console.error("Submit error:", error);
         toast.error(
-          error instanceof Error ? error.message : "Failed to create link"
+          error instanceof Error ? error.message : `Failed to ${isEditMode ? 'update' : 'create'} link`
         );
       }
     });
@@ -221,10 +258,10 @@ export function CreateLinkForm({ designConfig }: CreateLinkFormProps) {
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
+                {isEditMode ? "Updating..." : "Saving..."}
               </>
             ) : (
-              "Save as Draft"
+              isEditMode ? "Save as Draft" : "Save as Draft"
             )}
           </Button>
 
@@ -237,12 +274,12 @@ export function CreateLinkForm({ designConfig }: CreateLinkFormProps) {
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Publishing...
+                {isEditMode ? "Updating..." : "Publishing..."}
               </>
             ) : (
               <>
                 <CheckCircle className="mr-2 h-4 w-4" />
-                Publish Link
+                {isEditMode ? "Update Link" : "Publish Link"}
               </>
             )}
           </Button>

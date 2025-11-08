@@ -47,7 +47,7 @@ export default function HeroSection() {
                 <TextEffect
                   preset="fade-in-blur"
                   speedSegment={0.2}
-                  className="mt-8 max-w-2xl text-balance text-6xl font-regular font-serif md:text-6xl lg:mt-16"
+                  className="mt-8 max-w-2xl text-balance font-serif text-8xl md:text-6xl lg:mt-16"
                 >
                   Meet Your All-in-One
                 </TextEffect>
@@ -55,7 +55,7 @@ export default function HeroSection() {
                   preset="fade-in-blur"
                   speedSegment={0.2}
                   as="h1"
-                  className="max-w-2xl text-balance text-5xl font-regular font-serif md:text-7xl"
+                  className="max-w-2xl text-balance text-xl font-regular font-serif md:text-7xl"
                 >
                   Creator Store
                 </TextEffect>

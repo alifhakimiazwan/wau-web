@@ -37,25 +37,73 @@ import {
   type DigitalProductInput,
   type ProductReviewSchema,
 } from "@/lib/products/schemas";
-import { createDigitalProduct } from "@/lib/products/actions";
+import { createDigitalProduct, updateDigitalProduct } from "@/lib/products/actions";
 import type { DesignCustomization } from "@/lib/design/types";
+import type { Product } from "@/lib/products/types";
 import { DigitalProductPreview } from "@/components/products/digital-product/digital-product-preview";
 
 interface CreateDigitalProductFormProps {
   designConfig: DesignCustomization | null;
+  productId?: string;
+  initialData?: Product;
 }
 
 export function CreateDigitalProductForm({
   designConfig,
+  productId,
+  initialData,
 }: CreateDigitalProductFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [activeTab, setActiveTab] = useState<
     "landing" | "checkout" | "advanced"
   >("landing");
-  const [cardThumbnail, setCardThumbnail] = useState<string | null>(null);
-  const [checkoutImage, setCheckoutImage] = useState<string | null>(null);
-  const [reviews, setReviews] = useState<ProductReviewSchema[]>([]);
+
+  const isEditMode = !!productId && !!initialData;
+
+  // Type-safe extraction of digital product config from JSONB
+  const getDigitalProductConfig = () => {
+    if (!isEditMode || !initialData?.type_config) {
+      return null;
+    }
+
+    const config = initialData.type_config as Record<string, unknown>;
+    return {
+      style: (config.style as "classic" | "callout") || "classic",
+      cardTitle: (config.cardTitle as string) || "",
+      cardSubtitle: (config.cardSubtitle as string) || "",
+      cardButtonText: (config.cardButtonText as string) || "",
+      cardThumbnail: (config.cardThumbnail as string) || undefined,
+      description: (config.description as string) || "",
+      bottomTitle: (config.bottomTitle as string) || "",
+      checkoutButtonText: (config.checkoutButtonText as string) || "",
+      checkoutImage: (config.checkoutImage as string) || undefined,
+      price: (config.price as number) || 0,
+      discountedPrice: (config.discountedPrice as number) || undefined,
+      hasDiscount: (config.hasDiscount as boolean) || false,
+      customerFields: (config.customerFields as {
+        email: boolean;
+        name: boolean;
+        phone: boolean;
+      }) || { email: true, name: false, phone: false },
+      productType: (config.productType as "link" | "file") || "link",
+      productLink: (config.productLink as { url: string; title: string }) || undefined,
+      productFile: (config.productFile as { url: string; filename: string; size: number }) || undefined,
+      reviews: (config.reviews as ProductReviewSchema[]) || [],
+    };
+  };
+
+  const digitalProductConfig = getDigitalProductConfig();
+
+  const [cardThumbnail, setCardThumbnail] = useState<string | null>(
+    isEditMode && digitalProductConfig?.cardThumbnail ? digitalProductConfig.cardThumbnail : null
+  );
+  const [checkoutImage, setCheckoutImage] = useState<string | null>(
+    isEditMode && digitalProductConfig?.checkoutImage ? digitalProductConfig.checkoutImage : null
+  );
+  const [reviews, setReviews] = useState<ProductReviewSchema[]>(
+    isEditMode && digitalProductConfig?.reviews ? digitalProductConfig.reviews : []
+  );
 
   const {
     register,
@@ -66,7 +114,29 @@ export function CreateDigitalProductForm({
     formState: { errors },
   } = useForm<DigitalProductInput>({
     resolver: zodResolver(digitalProductSchema),
-    defaultValues: {
+    defaultValues: isEditMode && digitalProductConfig ? {
+      style: digitalProductConfig.style,
+      cardTitle: digitalProductConfig.cardTitle,
+      cardSubtitle: digitalProductConfig.cardSubtitle,
+      cardButtonText: digitalProductConfig.cardButtonText,
+      cardThumbnail: digitalProductConfig.cardThumbnail,
+      description: digitalProductConfig.description,
+      bottomTitle: digitalProductConfig.bottomTitle,
+      checkoutButtonText: digitalProductConfig.checkoutButtonText,
+      checkoutImage: digitalProductConfig.checkoutImage,
+      price: digitalProductConfig.price,
+      discountedPrice: digitalProductConfig.discountedPrice,
+      hasDiscount: digitalProductConfig.hasDiscount,
+      customerFields: digitalProductConfig.customerFields,
+      productType: digitalProductConfig.productType,
+      ...(digitalProductConfig.productType === "link" && digitalProductConfig.productLink
+        ? { productLink: digitalProductConfig.productLink }
+        : {}),
+      ...(digitalProductConfig.productType === "file" && digitalProductConfig.productFile
+        ? { productFile: digitalProductConfig.productFile }
+        : {}),
+      status: (initialData.status as "draft" | "published") || "draft",
+    } : {
       style: "classic",
       cardTitle: "Get My [Template/eBook/Course] Now!",
       cardSubtitle: "We will deliver this file right to your inbox",
@@ -104,25 +174,29 @@ export function CreateDigitalProductForm({
           reviews,
         };
 
-        const result = await createDigitalProduct(payload);
+        const result = isEditMode && productId
+          ? await updateDigitalProduct(productId, payload)
+          : await createDigitalProduct(payload);
 
         if (!result.success) {
-          throw new Error(result.error || "Failed to create digital product");
+          throw new Error(result.error || `Failed to ${isEditMode ? 'update' : 'create'} digital product`);
         }
 
         toast.success(
-          status === "published"
+          isEditMode
+            ? "Digital product updated successfully!"
+            : status === "published"
             ? "Digital product published successfully!"
             : "Digital product saved as draft"
         );
 
-        router.push("/store/products");
+        router.push("/store");
       } catch (error) {
         console.error("Submit error:", error);
         toast.error(
           error instanceof Error
             ? error.message
-            : "Failed to create digital product"
+            : `Failed to ${isEditMode ? 'update' : 'create'} digital product`
         );
       }
     });
@@ -334,7 +408,7 @@ export function CreateDigitalProductForm({
                   {isPending ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Saving...
+                      {isEditMode ? "Updating..." : "Saving..."}
                     </>
                   ) : (
                     "Save as Draft"
@@ -348,12 +422,12 @@ export function CreateDigitalProductForm({
                   {isPending ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Publishing...
+                      {isEditMode ? "Updating..." : "Publishing..."}
                     </>
                   ) : (
                     <>
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Publish Product
+                      {isEditMode ? "Update Product" : "Publish Product"}
                     </>
                   )}
                 </Button>
