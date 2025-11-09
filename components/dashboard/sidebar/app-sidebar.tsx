@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import {
   IconBuildingStore,
   IconCamera,
@@ -138,12 +139,12 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
-              <a href="/dashboard">
+              <Link href="/dashboard">
                 <IconInnerShadowTop className="!size-5" />
                 <span className="text-base font-semibold text-blue-700">
                   Wau
                 </span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

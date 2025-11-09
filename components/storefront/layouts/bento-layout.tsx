@@ -19,6 +19,7 @@ import { getBorderRadius } from "@/lib/utils/design-helpers";
  * Profile info in a horizontal card with avatar on left, info on right
  */
 export const BentoLayout = memo(function BentoLayout({
+  storeId,
   name,
   bio,
   location,
@@ -104,7 +105,7 @@ export const BentoLayout = memo(function BentoLayout({
         </Card>
 
         {/* Products Section */}
-        <ProductsList products={products} designConfig={designConfig} />
+        <ProductsList products={products} storeId={storeId || ""} designConfig={designConfig} />
       </div>
     </div>
   );

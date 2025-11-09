@@ -44,46 +44,90 @@ export const leadMagnetSchema = z
     thumbnail: z.string().optional(),
     customerFields: customerFieldsSchema,
     freebieType: z.enum(["link", "file"]),
+    // Make nested fields optional to avoid validation when object exists but is empty
     freebieLink: z
       .object({
-        url: z.string().url("Please enter a valid URL"),
-        title: z.string().min(1, "Link title is required"),
+        url: z.string().optional(),
+        title: z.string().optional(),
       })
-      .optional(),
+      .optional()
+      .nullable(),
     freebieFile: z
       .object({
-        url: z.string(),
-        filename: z.string(),
-        size: z.number(),
+        url: z.string().optional(),
+        filename: z.string().optional(),
+        size: z.number().optional(),
       })
-      .optional(),
+      .optional()
+      .nullable(),
     successMessage: z.string().optional(),
     status: z.enum(["draft", "published"]).default("draft"),
   })
-  .refine(
-    (data) => {
-      if (data.freebieType === "link") {
-        return !!data.freebieLink?.url && !!data.freebieLink?.title;
+  .superRefine((data, ctx) => {
+    // Only validate link fields when freebieType is "link"
+    if (data.freebieType === "link") {
+      if (!data.freebieLink?.url || data.freebieLink.url.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Link URL is required when freebie type is link",
+          path: ["freebieLink", "url"],
+        });
       }
-      return true;
-    },
-    {
-      message: "Link URL and title are required when freebie type is link",
-      path: ["freebieLink"],
-    }
-  )
-  .refine(
-    (data) => {
-      if (data.freebieType === "file") {
-        return !!data.freebieFile?.url;
+      if (!data.freebieLink?.title || data.freebieLink.title.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Link title is required when freebie type is link",
+          path: ["freebieLink", "title"],
+        });
       }
-      return true;
-    },
-    {
-      message: "File is required when freebie type is file",
-      path: ["freebieFile"],
+      // Validate URL format only when provided
+      if (data.freebieLink?.url) {
+        try {
+          new URL(data.freebieLink.url);
+        } catch {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please enter a valid URL",
+            path: ["freebieLink", "url"],
+          });
+        }
+      }
     }
-  );
+
+    // Only validate file fields when freebieType is "file"
+    if (data.freebieType === "file") {
+      if (!data.freebieFile?.url || data.freebieFile.url.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "File is required when freebie type is file",
+          path: ["freebieFile"],
+        });
+      }
+    }
+  })
+  .transform((data) => {
+    // Clean up: remove opposite type's data to avoid confusion
+    if (data.freebieType === "link") {
+      return {
+        ...data,
+        freebieFile: undefined,
+        freebieLink: data.freebieLink && data.freebieLink.url ? {
+          url: data.freebieLink.url,
+          title: data.freebieLink.title || "",
+        } : undefined,
+      };
+    } else {
+      return {
+        ...data,
+        freebieLink: undefined,
+        freebieFile: data.freebieFile && data.freebieFile.url ? {
+          url: data.freebieFile.url,
+          filename: data.freebieFile.filename || "",
+          size: data.freebieFile.size || 0,
+        } : undefined,
+      };
+    }
+  });
 
 export type LeadMagnetSchema = z.infer<typeof leadMagnetSchema>;
 export type LeadMagnetInput = z.input<typeof leadMagnetSchema>;

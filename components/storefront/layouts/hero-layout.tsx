@@ -15,6 +15,7 @@ import { ProductsList } from "../sections/products-list";
  * Profile picture as full-height background with content overlay
  */
 export const HeroLayout = memo(function HeroLayout({
+  storeId,
   name,
   bio,
   location,
@@ -97,6 +98,7 @@ export const HeroLayout = memo(function HeroLayout({
       >
         <ProductsList
           products={products}
+          storeId={storeId || ""}
           designConfig={{
             themeId: theme || "original",
             fontFamily: fontFamily || "Inter",

@@ -21,10 +21,10 @@ export function LeadMagnetPreviewWrapper({
   // Watch all fields needed for preview in one call
   const formValues = useWatch({
     control,
-    name: ["name", "subtitle", "buttonText", "customerFields"],
+    name: ["name", "subtitle", "buttonText", "customerFields", "successMessage"],
   });
 
-  const [name, subtitle, buttonText, customerFields] = formValues;
+  const [name, subtitle, buttonText, customerFields, successMessage] = formValues;
 
   return (
     <ProductPreviewWrapper>
@@ -34,6 +34,7 @@ export function LeadMagnetPreviewWrapper({
         buttonText={buttonText}
         thumbnail={thumbnailUrl}
         customerFields={customerFields}
+        successMessage={successMessage}
         designConfig={designConfig}
       />
     </ProductPreviewWrapper>

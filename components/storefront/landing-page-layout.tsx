@@ -65,6 +65,7 @@ export const LandingPageLayout = memo(function LandingPageLayout({
 
   // Prepare props for theme layouts
   const layoutProps = {
+    storeId: store.id,
     name: store.name,
     bio: store.bio || undefined,
     location: store.location || undefined,
@@ -142,6 +143,7 @@ export const LandingPageLayout = memo(function LandingPageLayout({
           <div className="pb-8">
             <ProductsList
               products={products}
+              storeId={store.id}
               designConfig={{
                 themeId: theme,
                 fontFamily,

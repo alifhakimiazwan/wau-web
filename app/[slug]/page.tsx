@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { getPublicStore } from "@/lib/storefront/actions"
 import { LandingPageLayout } from "@/components/storefront/landing-page-layout"
+import { AnalyticsProvider } from "@/components/analytics/analytics-provider"
 import type { Metadata } from "next"
 
 interface PageProps {
@@ -65,11 +66,13 @@ export default async function StorefrontPage({ params }: PageProps) {
   const { store, products, socialLinks, customization } = storeData
 
   return (
-    <LandingPageLayout
-      store={store}
-      products={products}
-      socialLinks={socialLinks}
-      customization={customization}
-    />
+    <AnalyticsProvider storeId={store.id}>
+      <LandingPageLayout
+        store={store}
+        products={products}
+        socialLinks={socialLinks}
+        customization={customization}
+      />
+    </AnalyticsProvider>
   )
 }

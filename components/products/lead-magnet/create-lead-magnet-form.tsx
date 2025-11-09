@@ -25,7 +25,10 @@ import { LeadMagnetPreviewWrapper } from "@/components/products/lead-magnet/lead
 import { leadMagnetSchema, type LeadMagnetInput } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
 import type { Product } from "@/lib/products/types";
-import { createLeadMagnetProduct, updateLeadMagnetProduct } from "@/lib/products/actions";
+import {
+  createLeadMagnetProduct,
+  updateLeadMagnetProduct,
+} from "@/lib/products/actions";
 
 interface CreateLeadMagnetFormProps {
   designConfig: DesignCustomization | null;
@@ -58,8 +61,14 @@ export function CreateLeadMagnetForm({
         phone: boolean;
       }) || { email: true, name: false, phone: false },
       freebieType: (config.freebieType as "link" | "file") || "link",
-      freebieLink: (config.freebieLink as { url: string; title: string }) || undefined,
-      freebieFile: (config.freebieFile as { url: string; filename: string; size: number }) || undefined,
+      freebieLink:
+        (config.freebieLink as { url: string; title: string }) || undefined,
+      freebieFile:
+        (config.freebieFile as {
+          url: string;
+          filename: string;
+          size: number;
+        }) || undefined,
       successMessage: (config.successMessage as string) || "",
     };
   };
@@ -67,7 +76,7 @@ export function CreateLeadMagnetForm({
   const leadMagnetConfig = getLeadMagnetConfig();
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(
-    isEditMode && initialData ? (initialData.thumbnail_url || null) : null
+    isEditMode && initialData ? initialData.thumbnail_url || null : null
   );
 
   const {
@@ -80,44 +89,56 @@ export function CreateLeadMagnetForm({
     setError,
   } = useForm<LeadMagnetInput>({
     resolver: zodResolver(leadMagnetSchema),
-    defaultValues: isEditMode && leadMagnetConfig ? {
-      name: initialData.name || "",
-      subtitle: leadMagnetConfig.subtitle,
-      buttonText: leadMagnetConfig.buttonText,
-      thumbnail: initialData.thumbnail_url || "",
-      customerFields: leadMagnetConfig.customerFields,
-      freebieType: leadMagnetConfig.freebieType,
-      ...(leadMagnetConfig.freebieType === "link" && leadMagnetConfig.freebieLink
-        ? { freebieLink: leadMagnetConfig.freebieLink }
-        : {}),
-      ...(leadMagnetConfig.freebieType === "file" && leadMagnetConfig.freebieFile
-        ? { freebieFile: leadMagnetConfig.freebieFile }
-        : {}),
-      successMessage: leadMagnetConfig.successMessage,
-      status: (initialData.status as "draft" | "published") || "draft",
-    } : {
-      name: "Get My Free [Guide/Template/Checklist]",
-      subtitle: "Download your free resource instantly",
-      buttonText: "Get It Free",
-      thumbnail: "",
-      customerFields: {
-        email: true,
-        name: false,
-        phone: false,
-      },
-      freebieType: "link",
-      freebieLink: {
-        url: "",
-        title: "My Free Resource",
-      },
-      successMessage: "Thank you! Check your email for the download link.",
-    },
+    defaultValues:
+      isEditMode && leadMagnetConfig
+        ? {
+            name: initialData.name || "",
+            subtitle: leadMagnetConfig.subtitle,
+            buttonText: leadMagnetConfig.buttonText,
+            thumbnail: initialData.thumbnail_url || "",
+            customerFields: leadMagnetConfig.customerFields,
+            freebieType: leadMagnetConfig.freebieType,
+            ...(leadMagnetConfig.freebieType === "link" &&
+            leadMagnetConfig.freebieLink
+              ? { freebieLink: leadMagnetConfig.freebieLink }
+              : {}),
+            ...(leadMagnetConfig.freebieType === "file" &&
+            leadMagnetConfig.freebieFile
+              ? { freebieFile: leadMagnetConfig.freebieFile }
+              : {}),
+            successMessage: leadMagnetConfig.successMessage,
+            status: (initialData.status as "draft" | "published") || "draft",
+          }
+        : {
+            name: "Get My Free [Guide/Template/Checklist]",
+            subtitle: "Download your free resource instantly",
+            buttonText: "Get It Free",
+            thumbnail: "",
+            customerFields: {
+              email: true,
+              name: false,
+              phone: false,
+            },
+            freebieType: "link",
+            freebieLink: {
+              url: "",
+              title: "My Free Resource",
+            },
+            successMessage:
+              "Thank you! Check your email for the download link.",
+          },
   });
 
   const onSubmit = async (
     data: LeadMagnetInput,
     status: "draft" | "published"
   ) => {
+    // Debug: Log form data to see what's being submitted
+    console.log("Form data before validation:", data);
+    console.log("freebieType:", data.freebieType);
+    console.log("freebieFile:", data.freebieFile);
+    console.log("freebieLink:", data.freebieLink);
+
     startTransition(async () => {
       try {
         const payload = {
@@ -126,33 +147,37 @@ export function CreateLeadMagnetForm({
           status,
         };
 
-        const result = isEditMode && productId
-          ? await updateLeadMagnetProduct(productId, payload)
-          : await createLeadMagnetProduct(payload);
+        const result =
+          isEditMode && productId
+            ? await updateLeadMagnetProduct(productId, payload)
+            : await createLeadMagnetProduct(payload);
 
         if (!result.success) {
-          throw new Error(result.error || `Failed to ${isEditMode ? 'update' : 'create'} lead magnet`);
+          throw new Error(
+            result.error ||
+              `Failed to ${isEditMode ? "update" : "create"} lead magnet`
+          );
         }
 
         toast.success(
           isEditMode
             ? "Lead magnet updated successfully!"
             : status === "draft"
-            ? "Lead magnet saved as draft!"
-            : "Lead magnet published successfully!"
+              ? "Lead magnet saved as draft!"
+              : "Lead magnet published successfully!"
         );
         router.push("/store");
       } catch (error) {
         toast.error(
           error instanceof Error
             ? error.message
-            : `Failed to ${isEditMode ? 'update' : 'create'} lead magnet`
+            : `Failed to ${isEditMode ? "update" : "create"} lead magnet`
         );
         setError("root", {
           message:
             error instanceof Error
               ? error.message
-              : `Failed to ${isEditMode ? 'update' : 'create'} lead magnet`,
+              : `Failed to ${isEditMode ? "update" : "create"} lead magnet`,
         });
       }
     });
@@ -182,7 +207,6 @@ export function CreateLeadMagnetForm({
             </div>
           </div>
           <Separator className="my-8" />
-
           {/* Thumbnail Section */}
           <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
             <div className="flex gap-3">
@@ -208,9 +232,7 @@ export function CreateLeadMagnetForm({
               />
             </div>
           </div>
-
           <Separator className="my-8" />
-
           {/* Customer Fields Section */}
           <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
             <div className="flex gap-3">
@@ -234,9 +256,7 @@ export function CreateLeadMagnetForm({
               />
             </div>
           </div>
-
           <Separator className="my-8" />
-
           {/* Freebie Delivery Section */}
           <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
             <div className="flex gap-3">
@@ -261,9 +281,7 @@ export function CreateLeadMagnetForm({
               />
             </div>
           </div>
-
           <Separator className="my-8" />
-
           {/* Success Message Section */}
           <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
             <div className="flex gap-3">
@@ -283,11 +301,9 @@ export function CreateLeadMagnetForm({
               <SuccessMessage register={register} errors={errors} />
             </div>
           </div>
-
           <Separator className="my-8" />
-
           {/* Error Message */}
-          {/* {errors.root && (
+          {errors.root && (
             <div className="mb-8">
               <div className="p-4 border border-destructive bg-destructive/10 rounded-lg">
                 <Typography variant="small" className="text-destructive">
@@ -295,8 +311,44 @@ export function CreateLeadMagnetForm({
                 </Typography>
               </div>
             </div>
+          )}
+          {/* Validation Errors Summary
+          {Object.keys(errors).length > 0 && !errors.root && (
+            <div className="mb-8">
+              <div className="p-4 border border-destructive bg-destructive/10 rounded-lg">
+                <Typography
+                  variant="small"
+                  className="text-destructive font-semibold mb-2"
+                >
+                  Please fix the following errors:
+                </Typography>
+                <ul className="list-disc list-inside space-y-1">
+                  {errors.name && (
+                    <Typography variant="small" className="text-destructive">
+                      • {errors.name.message}
+                    </Typography>
+                  )}
+                  {errors.freebieLink && (
+                    <Typography variant="small" className="text-destructive">
+                      •{" "}
+                      {errors.freebieLink.message ||
+                        "Link information is incomplete"}
+                    </Typography>
+                  )}
+                  {errors.freebieFile && (
+                    <Typography variant="small" className="text-destructive">
+                      • {errors.freebieFile.message || "File is required"}
+                    </Typography>
+                  )}
+                  {errors.successMessage && (
+                    <Typography variant="small" className="text-destructive">
+                      • {errors.successMessage.message}
+                    </Typography>
+                  )}
+                </ul>
+              </div>
+            </div>
           )} */}
-
           {/* Action Buttons */}
           <div className="flex items-center justify-between">
             <Button
@@ -336,8 +388,10 @@ export function CreateLeadMagnetForm({
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     {isEditMode ? "Updating..." : "Publishing..."}
                   </>
+                ) : isEditMode ? (
+                  "Update Lead Magnet"
                 ) : (
-                  isEditMode ? "Update Lead Magnet" : "Publish Lead Magnet"
+                  "Publish Lead Magnet"
                 )}
               </Button>
             </div>

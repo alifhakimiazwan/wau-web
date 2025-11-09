@@ -16,6 +16,7 @@ import { ButtonStyle } from "../design/types";
 export type Product = Database["public"]["Tables"]["products"]["Row"];
 
 export interface StorefrontPreviewProps {
+    storeId?: string; // For analytics tracking on storefront
     name: string;
     bio?: string;
     location?: string;

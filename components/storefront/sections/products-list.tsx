@@ -16,9 +16,10 @@ type Product = Database["public"]["Tables"]["products"]["Row"];
 interface ProductsListProps {
   products: Product[];
   designConfig?: DesignCustomization | null;
+  storeId: string; // For analytics tracking
 }
 
-export function ProductsList({ products, designConfig }: ProductsListProps) {
+export function ProductsList({ products, designConfig, storeId }: ProductsListProps) {
   // Filter published products and sections, sort by position
   const visibleItems = products
     .filter((item) => {
@@ -75,6 +76,8 @@ export function ProductsList({ products, designConfig }: ProductsListProps) {
                   designConfig={designConfig}
                   cardBackgroundColor={cardBackgroundColor}
                   cardShadow={cardShadow}
+                  productId={product.id}
+                  storeId={storeId}
                 />
               );
             }
@@ -91,6 +94,8 @@ export function ProductsList({ products, designConfig }: ProductsListProps) {
                   designConfig={designConfig}
                   cardBackgroundColor={cardBackgroundColor}
                   cardShadow={cardShadow}
+                  productId={product.id}
+                  storeId={storeId}
                 />
               );
             }
@@ -103,6 +108,8 @@ export function ProductsList({ products, designConfig }: ProductsListProps) {
                   designConfig={designConfig}
                   cardBackgroundColor={cardBackgroundColor}
                   cardShadow={cardShadow}
+                  productId={product.id}
+                  storeId={storeId}
                 />
               );
             }
@@ -150,13 +157,18 @@ export function ProductsList({ products, designConfig }: ProductsListProps) {
             return (
               <LeadMagnetPreview
                 key={product.id}
-                name={config?.name}
+                name={product.name}
                 subtitle={config?.subtitle}
                 buttonText={config?.buttonText}
                 thumbnail={product.thumbnail_url}
+                customerFields={config?.customerFields}
+                successMessage={config?.successMessage}
                 designConfig={designConfig}
                 cardBackgroundColor={cardBackgroundColor}
                 cardShadow={cardShadow}
+                productId={product.id}
+                storeId={storeId}
+                isPreview={false}
               />
             );
 

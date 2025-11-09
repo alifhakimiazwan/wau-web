@@ -17,6 +17,7 @@ import { ProductsList } from "../sections/products-list";
  * Centered profile with optional banner
  */
 export const DefaultLayout = memo(function DefaultLayout({
+  storeId,
   name,
   bio,
   location,
@@ -90,6 +91,7 @@ export const DefaultLayout = memo(function DefaultLayout({
         {/* Products Section */}
         <ProductsList
           products={products}
+          storeId={storeId || ""}
           designConfig={{
             themeId: theme || "original",
             fontFamily: fontFamily || "Inter",

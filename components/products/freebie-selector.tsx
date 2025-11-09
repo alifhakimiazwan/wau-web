@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { UseFormRegister, FieldErrors, UseFormWatch, UseFormSetValue } from "react-hook-form";
+import {
+  UseFormRegister,
+  FieldErrors,
+  UseFormWatch,
+  UseFormSetValue,
+} from "react-hook-form";
 import { FloatingInput } from "@/components/ui/floating-input";
 import {
   Tabs,
@@ -184,15 +189,16 @@ export function FreebieSelector({
                     <FileText className="w-8 h-8 text-primary" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">
-                        {uploadedFile?.name || existingFile?.filename || "Unknown file"}
+                        {uploadedFile?.name ||
+                          existingFile?.filename ||
+                          "Unknown file"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {uploadedFile
                           ? `${(uploadedFile.size / 1024 / 1024).toFixed(2)} MB`
                           : existingFile?.size
-                          ? `${(existingFile.size / 1024 / 1024).toFixed(2)} MB`
-                          : "Unknown size"
-                        }
+                            ? `${(existingFile.size / 1024 / 1024).toFixed(2)} MB`
+                            : "Unknown size"}
                       </p>
                     </div>
                     <Button
@@ -205,11 +211,11 @@ export function FreebieSelector({
                     </Button>
                   </div>
                 )}
-                {errors.freebieFile && (
+                {/* {errors.freebieFile && (
                   <FieldDescription className="text-destructive mt-2">
                     {errors.freebieFile.message as string}
                   </FieldDescription>
-                )}
+                )} */}
               </Card>
             </TabsContent>
           </TabsContents>
