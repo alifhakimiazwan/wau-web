@@ -1,7 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { Link2, ExternalLink } from "lucide-react";
+import { Link2 } from "lucide-react";
 import Image from "next/image";
 import type { DesignCustomization } from "@/lib/design/types";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,8 @@ export function LinkClassicPreview({
   // Get analytics context only if on storefront (has productId and storeId)
   let analytics;
   try {
-    analytics = productId && storeId && !isPreview ? useAnalyticsContext() : null;
+    analytics =
+      productId && storeId && !isPreview ? useAnalyticsContext() : null;
   } catch {
     // Not wrapped in AnalyticsProvider (e.g., in dashboard preview)
     analytics = null;
@@ -58,7 +59,7 @@ export function LinkClassicPreview({
         referrer: analytics.referrer,
         ...analytics.utmParams,
       }).catch((error) => {
-        console.error('Error tracking product click:', error);
+        console.error("Error tracking product click:", error);
       });
     }
   };
@@ -67,7 +68,8 @@ export function LinkClassicPreview({
     <Card
       className={cn(
         "overflow-hidden py-0 border-1",
-        isClickable && "cursor-pointer transition-all hover:opacity-90 hover:scale-[1.02]",
+        isClickable &&
+          "cursor-pointer transition-all hover:opacity-90 hover:scale-[1.02]",
         borderRadius
       )}
       style={{

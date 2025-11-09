@@ -8,10 +8,7 @@ import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import type { DesignCustomization } from "@/lib/design/types";
 import { cn } from "@/lib/utils";
-import {
-  getBorderRadius,
-  getInputBorderRadius,
-} from "@/lib/utils/design-helpers";
+import { getInputBorderRadius } from "@/lib/utils/design-helpers";
 
 interface CustomerFields {
   email?: boolean;
@@ -42,9 +39,7 @@ export function DigitalProductCheckoutPreview({
   customerFields = { email: true, name: false, phone: false },
   designConfig,
 }: DigitalProductCheckoutPreviewProps) {
-  const borderRadius = getBorderRadius(designConfig);
   const inputBorderRadius = getInputBorderRadius(designConfig);
-  const topBorderRadius = getBorderRadius(designConfig, "top");
 
   const displayPrice = hasDiscount && discountedPrice ? discountedPrice : price;
   const showOriginalPrice =

@@ -1,21 +1,19 @@
-"use client"
+"use client";
 
-import { memo } from "react"
-import { cn } from "@/lib/utils"
-import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types"
-import { usePreviewTheme } from "@/lib/preview/hooks/use-preview-theme"
-import { useValidLinks } from "@/lib/preview/hooks/use-valid-links"
-import { ProfileAvatar } from "./sections/profile-avatar"
-import { ProfileHeader } from "./sections/profile-header"
-import { ProfileBio } from "./sections/profile-bio"
-import { SocialIcons } from "./sections/social-icons"
-import { ProductsList } from "./sections/products-list"
-import { DefaultLayout } from "./layouts/default-layout"
-import { HeroLayout } from "./layouts/hero-layout"
-import { BentoLayout } from "./layouts/bento-layout"
-import type { PublicStoreData } from "@/lib/storefront/actions"
+import { memo } from "react";
+import { usePreviewTheme } from "@/lib/preview/hooks/use-preview-theme";
+import { useValidLinks } from "@/lib/preview/hooks/use-valid-links";
+import { ProfileAvatar } from "./sections/profile-avatar";
+import { ProfileHeader } from "./sections/profile-header";
+import { ProfileBio } from "./sections/profile-bio";
+import { SocialIcons } from "./sections/social-icons";
+import { ProductsList } from "./sections/products-list";
+import { DefaultLayout } from "./layouts/default-layout";
+import { HeroLayout } from "./layouts/hero-layout";
+import { BentoLayout } from "./layouts/bento-layout";
+import type { PublicStoreData } from "@/lib/storefront/actions";
 
-type LandingPageLayoutProps = PublicStoreData
+type LandingPageLayoutProps = PublicStoreData;
 
 /**
  * Landing Page Layout
@@ -33,17 +31,15 @@ export const LandingPageLayout = memo(function LandingPageLayout({
   const transformedSocialLinks = socialLinks.map((link) => ({
     platform: link.platform,
     url: link.url || "",
-  }))
-
-  const validLinks = useValidLinks(transformedSocialLinks)
+  }));
 
   // Get theme configuration
-  const theme = customization?.theme || "original"
-  const fontFamily = customization?.font_family || "DM Sans"
-  const blockShape = customization?.block_shape || "rounded"
-  const primaryColor = customization?.primary_color
-  const accentColor = customization?.accent_color
-  const buttonStyle = customization?.button_style || "filled"
+  const theme = customization?.theme || "original";
+  const fontFamily = customization?.font_family || "DM Sans";
+  const blockShape = customization?.block_shape || "rounded";
+  const primaryColor = customization?.primary_color;
+  const accentColor = customization?.accent_color;
+  const buttonStyle = customization?.button_style || "filled";
 
   const {
     themeConfig,
@@ -59,9 +55,11 @@ export const LandingPageLayout = memo(function LandingPageLayout({
       primaryColor && accentColor
         ? { primary: primaryColor, accent: accentColor }
         : undefined,
-  })
+  });
 
-  const buttonConfig = { style: buttonStyle as "filled" | "outlined" | "ghost" }
+  const buttonConfig = {
+    style: buttonStyle as "filled" | "outlined" | "ghost",
+  };
 
   // Prepare props for theme layouts
   const layoutProps = {
@@ -76,24 +74,27 @@ export const LandingPageLayout = memo(function LandingPageLayout({
     theme,
     fontFamily,
     blockShape,
-    colors: primaryColor && accentColor ? { primary: primaryColor, accent: accentColor } : undefined,
+    colors:
+      primaryColor && accentColor
+        ? { primary: primaryColor, accent: accentColor }
+        : undefined,
     buttonConfig,
-  }
+  };
 
   // Determine layout based on theme
-  const themeLayout = themeConfig?.layout || "default"
+  const themeLayout = themeConfig?.layout || "default";
 
   // Render mobile layout using theme-specific component
   const MobileLayout = () => {
     switch (themeLayout) {
       case "hero":
-        return <HeroLayout {...layoutProps} />
+        return <HeroLayout {...layoutProps} />;
       case "bento":
-        return <BentoLayout {...layoutProps} />
+        return <BentoLayout {...layoutProps} />;
       default:
-        return <DefaultLayout {...layoutProps} />
+        return <DefaultLayout {...layoutProps} />;
     }
-  }
+  };
 
   return (
     <>
@@ -130,7 +131,10 @@ export const LandingPageLayout = memo(function LandingPageLayout({
 
               <ProfileHeader name={store.name} />
 
-              <ProfileBio bio={store.bio || undefined} location={store.location || undefined} />
+              <ProfileBio
+                bio={store.bio || undefined}
+                location={store.location || undefined}
+              />
 
               <SocialIcons
                 socialLinks={socialLinks}
@@ -159,5 +163,5 @@ export const LandingPageLayout = memo(function LandingPageLayout({
         </div>
       </div>
     </>
-  )
-})
+  );
+});

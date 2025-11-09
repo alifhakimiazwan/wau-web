@@ -72,7 +72,7 @@ export async function submitLeadCapture(
     }
 
     // Parse product config
-    const productConfig = product.type_config as LeadMagnetConfig
+    const productConfig = product.type_config as unknown as LeadMagnetConfig
 
     // Insert lead capture record
     const { data: leadCapture, error: leadCaptureError } = await supabase
@@ -213,7 +213,7 @@ export async function retryFreebieEmail(
     }
 
     // Parse product config
-    const productConfig = leadCapture.products.type_config as LeadMagnetConfig
+    const productConfig = leadCapture.products.type_config as unknown as LeadMagnetConfig
 
     // Resend freebie email
     const emailResult = await sendFreebieEmail({

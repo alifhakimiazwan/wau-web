@@ -3,7 +3,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { resend, FROM_EMAIL } from './resend'
 import LeadMagnetFreebieEmail from '@/emails/lead-magnet-freebie'
-import type { LeadMagnetConfig } from '@/lib/products/types'
 
 interface SendFreebieInput {
   toEmail: string

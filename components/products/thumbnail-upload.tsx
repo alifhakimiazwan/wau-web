@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import Image from "next/image";
-import { Magnet, TrashIcon, Upload, Loader2, X } from "lucide-react";
+import { Magnet, Upload, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, FieldDescription } from "@/components/ui/field";

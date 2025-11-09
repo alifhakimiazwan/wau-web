@@ -1,9 +1,14 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldDescription, FieldError } from "@/components/ui/field";
+import { Field } from "@/components/ui/field";
 import { Card } from "@/components/ui/card";
-import type { UseFormWatch, UseFormSetValue, FieldErrors, Path } from "react-hook-form";
+import type {
+  UseFormWatch,
+  UseFormSetValue,
+  FieldErrors,
+  Path,
+} from "react-hook-form";
 
 // Generic type for any form that has customerFields
 type FormWithCustomerFields = {
@@ -38,7 +43,10 @@ export function CustomerFieldsSelector<T extends FormWithCustomerFields>({
             id="customerFields.email"
             checked={emailChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.email" as Path<T>, (checked === true) as never)
+              setValue(
+                "customerFields.email" as Path<T>,
+                (checked === true) as never
+              )
             }
           />
           <label
@@ -55,7 +63,10 @@ export function CustomerFieldsSelector<T extends FormWithCustomerFields>({
             id="customerFields.name"
             checked={nameChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.name" as Path<T>, (checked === true) as never)
+              setValue(
+                "customerFields.name" as Path<T>,
+                (checked === true) as never
+              )
             }
           />
           <label
@@ -72,7 +83,10 @@ export function CustomerFieldsSelector<T extends FormWithCustomerFields>({
             id="customerFields.phone"
             checked={phoneChecked}
             onCheckedChange={(checked) =>
-              setValue("customerFields.phone" as Path<T>, (checked === true) as never)
+              setValue(
+                "customerFields.phone" as Path<T>,
+                (checked === true) as never
+              )
             }
           />
           <label

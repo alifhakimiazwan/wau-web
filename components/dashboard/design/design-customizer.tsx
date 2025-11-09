@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { ThemeCarousel } from "./dashboard/theme-carousel";
 import { FontSelector } from "./font/font-selector";
 import { ColorSelectorDropdown } from "./color/color-selector-dropdown";

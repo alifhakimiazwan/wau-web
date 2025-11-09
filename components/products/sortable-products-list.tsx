@@ -295,12 +295,13 @@ export function SortableProductsList({
                 onClick={() => handleProductClick(product)}
               >
                 {/* Drag Handle */}
-                <SortableItemHandle
-                  className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <GripVertical className="h-5 w-5" />
-                </SortableItemHandle>
+                <div onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                  <SortableItemHandle
+                    className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
+                  >
+                    <GripVertical className="h-5 w-5" />
+                  </SortableItemHandle>
+                </div>
 
                 {/* Thumbnail */}
                 <div className="flex-shrink-0">

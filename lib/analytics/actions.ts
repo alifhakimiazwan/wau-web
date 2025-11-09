@@ -42,7 +42,7 @@ function handleAnalyticsError(error: unknown, defaultMessage: string): { success
   if (error instanceof ZodError) {
     return {
       success: false,
-      error: error.errors[0].message,
+      error: error.issues[0].message,
     }
   }
 

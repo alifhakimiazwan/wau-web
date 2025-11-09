@@ -24,6 +24,7 @@ import { Loader2, Check, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Typography } from "../ui/typography";
 import Image from "next/image";
+import Link from "next/link";
 
 interface OnboardingFormProps extends React.ComponentProps<"div"> {
   userName?: string;
@@ -220,13 +221,13 @@ export function OnboardingForm({
 
       <FieldDescription className="px-6 text-center text-xs">
         By continuing, you agree to our{" "}
-        <a href="/terms" className="underline hover:text-primary">
+        <Link href="/terms" className="underline hover:text-primary">
           Terms of Service
-        </a>{" "}
+        </Link>{" "}
         and{" "}
-        <a href="/privacy" className="underline hover:text-primary">
+        <Link href="/privacy" className="underline hover:text-primary">
           Privacy Policy
-        </a>
+        </Link>
         .
       </FieldDescription>
     </div>

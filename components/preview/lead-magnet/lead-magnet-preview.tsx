@@ -113,6 +113,8 @@ export function LeadMagnetPreview({
         phoneNumber: phoneNumber || undefined,
         sessionId: analytics?.sessionId || undefined,
         referrer: analytics?.referrer || undefined,
+        userAgent: undefined,
+        ipHash: undefined,
         utm_source: analytics?.utmParams.utm_source,
         utm_medium: analytics?.utmParams.utm_medium,
         utm_campaign: analytics?.utmParams.utm_campaign,
@@ -126,7 +128,7 @@ export function LeadMagnetPreview({
         setLeadCaptureId(result.data.leadCaptureId);
       } else {
         setSubmitStatus('error');
-        setErrorMessage(result.error || 'Something went wrong. Please try again.');
+        setErrorMessage(!result.success ? result.error : 'Something went wrong. Please try again.');
       }
     } catch (error) {
       setSubmitStatus('error');
@@ -221,7 +223,6 @@ export function LeadMagnetPreview({
             shape: designConfig?.blockShape || "rounded",
           }}
           accentColor={designConfig?.colors.accent}
-          disabled
         />
       </div>
     </Card>

@@ -34,7 +34,7 @@ export {
   trackLeadSubmissionSchema,
   trackPurchaseSchema,
   utmParamsSchema,
-  sessionSchema,
+  sessionDataSchema,
 } from "./schemas";
 
 // Types

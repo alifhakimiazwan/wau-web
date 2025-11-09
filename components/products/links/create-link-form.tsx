@@ -8,15 +8,12 @@ import { toast } from "sonner";
 import {
   Loader2,
   Image as ImageIcon,
-  ExternalLink,
-  Palette,
   CheckCircle,
   LayoutDashboard,
   Link as LinkIcon,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
 
 import { StyleSelector } from "./style-selector";
@@ -42,7 +39,11 @@ interface CreateLinkFormProps {
   initialData?: Product;
 }
 
-export function CreateLinkForm({ designConfig, productId, initialData }: CreateLinkFormProps) {
+export function CreateLinkForm({
+  designConfig,
+  productId,
+  initialData,
+}: CreateLinkFormProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isEditMode = !!productId && !!initialData;
@@ -66,7 +67,7 @@ export function CreateLinkForm({ designConfig, productId, initialData }: CreateL
   const linkConfig = getLinkConfig();
 
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(
-    isEditMode && initialData ? (initialData.thumbnail_url || null) : null
+    isEditMode && initialData ? initialData.thumbnail_url || null : null
   );
 
   const {
@@ -79,22 +80,25 @@ export function CreateLinkForm({ designConfig, productId, initialData }: CreateL
     setError,
   } = useForm<LinkInput>({
     resolver: zodResolver(linkSchema),
-    defaultValues: isEditMode && linkConfig ? {
-      style: linkConfig.style,
-      name: linkConfig.name,
-      subtitle: linkConfig.subtitle,
-      buttonText: linkConfig.buttonText,
-      thumbnail: initialData.thumbnail_url || "",
-      url: linkConfig.url,
-      status: (initialData.status as "draft" | "published") || "draft",
-    } : {
-      style: "classic",
-      name: "Check Out My [Portfolio/Website/Project]",
-      subtitle: "Visit my website to learn more",
-      buttonText: "Visit Now",
-      thumbnail: "",
-      url: "https://",
-    },
+    defaultValues:
+      isEditMode && linkConfig
+        ? {
+            style: linkConfig.style,
+            name: linkConfig.name,
+            subtitle: linkConfig.subtitle,
+            buttonText: linkConfig.buttonText,
+            thumbnail: initialData.thumbnail_url || "",
+            url: linkConfig.url,
+            status: (initialData.status as "draft" | "published") || "draft",
+          }
+        : {
+            style: "classic",
+            name: "Check Out My [Portfolio/Website/Project]",
+            subtitle: "Visit my website to learn more",
+            buttonText: "Visit Now",
+            thumbnail: "",
+            url: "https://",
+          },
   });
 
   // Watch only fields needed for conditional rendering in the form
@@ -111,27 +115,32 @@ export function CreateLinkForm({ designConfig, productId, initialData }: CreateL
           status,
         };
 
-        const result = isEditMode && productId
-          ? await updateLinkProduct(productId, payload)
-          : await createLinkProduct(payload);
+        const result =
+          isEditMode && productId
+            ? await updateLinkProduct(productId, payload)
+            : await createLinkProduct(payload);
 
         if (!result.success) {
-          throw new Error(result.error || `Failed to ${isEditMode ? 'update' : 'create'} link`);
+          throw new Error(
+            result.error || `Failed to ${isEditMode ? "update" : "create"} link`
+          );
         }
 
         toast.success(
           isEditMode
             ? "Link updated successfully!"
             : status === "published"
-            ? "Link published successfully!"
-            : "Link saved as draft"
+              ? "Link published successfully!"
+              : "Link saved as draft"
         );
 
         router.push("/store");
       } catch (error) {
         console.error("Submit error:", error);
         toast.error(
-          error instanceof Error ? error.message : `Failed to ${isEditMode ? 'update' : 'create'} link`
+          error instanceof Error
+            ? error.message
+            : `Failed to ${isEditMode ? "update" : "create"} link`
         );
       }
     });
@@ -260,8 +269,10 @@ export function CreateLinkForm({ designConfig, productId, initialData }: CreateL
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 {isEditMode ? "Updating..." : "Saving..."}
               </>
+            ) : isEditMode ? (
+              "Save as Draft"
             ) : (
-              isEditMode ? "Save as Draft" : "Save as Draft"
+              "Save as Draft"
             )}
           </Button>
 
