@@ -1,7 +1,7 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL || "", // optional
+  // No baseURL - use relative URLs (works on any domain)
   headers: {
     "Content-Type": "application/json",
   },
