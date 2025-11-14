@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { getAuthUserWithStore } from "@/lib/guards/auth-helpers";
 
+// ========================================
+// POST /api/products - Upload product files
+// ========================================
+
 /**
- * API Route: Upload Product Files
  * Handles upload of product thumbnails and freebie files
  */
 export async function POST(request: Request) {

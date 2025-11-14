@@ -3,8 +3,8 @@
 import { memo } from "react";
 import { cn } from "@/lib/utils";
 import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
-import { usePreviewTheme } from "@/lib/preview/hooks/use-preview-theme";
-import { useValidLinks } from "@/lib/preview/hooks/use-valid-links";
+import { usePreviewTheme } from "@/lib/theme/hooks/use-preview-theme";
+import { useValidLinks } from "@/lib/theme/hooks/use-valid-links";
 import { StorefrontPreviewProps } from "@/lib/profile/types";
 import { ProfileAvatar } from "../sections/profile-avatar";
 import { ProfileHeader } from "../sections/profile-header";

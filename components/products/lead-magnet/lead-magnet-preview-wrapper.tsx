@@ -2,8 +2,8 @@
 
 import { useWatch } from "react-hook-form";
 import type { Control } from "react-hook-form";
-import { ProductPreviewWrapper } from "@/components/preview/utils/product-preview-wrapper";
-import { LeadMagnetPreview } from "@/components/preview/lead-magnet/lead-magnet-preview";
+import { ProductPreviewWrapper } from "@/components/product-cards/utils/product-preview-wrapper";
+import { LeadMagnetPreview } from "@/components/product-cards/lead-magnet/lead-magnet-preview";
 import type { LeadMagnetInput } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
 

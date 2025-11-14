@@ -2,10 +2,10 @@
 
 import { useWatch } from "react-hook-form";
 import type { Control } from "react-hook-form";
-import { ProductPreviewWrapper } from "@/components/preview/utils/product-preview-wrapper";
-import { LinkClassicPreview } from "@/components/preview/link/link-classic-preview";
-import { LinkCalloutPreview } from "@/components/preview/link/link-callout-preview";
-import { LinkEmbedPreview } from "@/components/preview/link/link-embed-preview";
+import { ProductPreviewWrapper } from "@/components/product-cards/utils/product-preview-wrapper";
+import { LinkClassicPreview } from "@/components/product-cards/link/link-classic-preview";
+import { LinkCalloutPreview } from "@/components/product-cards/link/link-callout-preview";
+import { LinkEmbedPreview } from "@/components/product-cards/link/link-embed-preview";
 import type { LinkInput } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
 

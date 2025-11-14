@@ -2,10 +2,10 @@
 
 import { useWatch } from "react-hook-form";
 import type { Control } from "react-hook-form";
-import { ProductPreviewWrapper } from "@/components/preview/utils/product-preview-wrapper";
-import { DigitalProductClassicPreview } from "@/components/preview/digital-product/digital-product-classic-preview";
-import { DigitalProductCalloutPreview } from "@/components/preview/digital-product/digital-product-callout-preview";
-import { DigitalProductCheckoutPreview } from "@/components/preview/digital-product/digital-product-checkout-preview";
+import { ProductPreviewWrapper } from "@/components/product-cards/utils/product-preview-wrapper";
+import { DigitalProductClassicPreview } from "@/components/product-cards/digital-product/digital-product-classic-preview";
+import { DigitalProductCalloutPreview } from "@/components/product-cards/digital-product/digital-product-callout-preview";
+import { DigitalProductCheckoutPreview } from "@/components/product-cards/digital-product/digital-product-checkout-preview";
 import type { DigitalProductInput } from "@/lib/products/schemas";
 import type { DesignCustomization } from "@/lib/design/types";
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import axios from "axios";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,14 +62,9 @@ export function ReviewsSection({
     formData.append("type", "product_thumbnail");
 
     try {
-      const response = await fetch("/api/products/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const { data } = await axios.post("/api/products", formData);
 
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
+      if (!data.success) {
         throw new Error(data.error || "Upload failed");
       }
 

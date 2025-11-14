@@ -1,6 +1,9 @@
 "use server";
 
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { toISODateString } from "./date-utils";
+import { calculatePercentageChange } from "./formatters";
+import type { TimeSeriesData, ComparisonMetrics, ComparisonMetric, TopProduct as NewTopProduct, MetricType } from "./types";
 
 interface DateRange {
   from: string; // ISO date string
@@ -285,9 +288,11 @@ export async function getProductAnalytics(
  */
 export async function getTrafficSources(
   storeId: string,
-  dateRange?: DateRange
+  dateRange?: DateRange,
+  limit: number = 100
 ): Promise<AnalyticsResponse<TrafficSource[]>> {
   try {
+    const safeLimit = Math.min(limit, 100);
     const supabase = await createServerSupabaseClient();
 
     // Build date filter
@@ -345,9 +350,9 @@ export async function getTrafficSources(
     });
 
     // Convert to array and sort by clicks descending
-    const trafficSources = Array.from(sourceMap.values()).sort(
-      (a, b) => b.clicks - a.clicks
-    );
+    const trafficSources = Array.from(sourceMap.values())
+      .sort((a, b) => b.clicks - a.clicks)
+      .slice(0, safeLimit);
 
     return {
       success: true,
@@ -454,5 +459,222 @@ export async function getTopProducts(
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch top products",
     };
+  }
+}
+
+export async function getTimeSeriesData(
+  storeId: string,
+  startDate: Date,
+  endDate: Date,
+  metric: MetricType
+): Promise<TimeSeriesData[]> {
+  try {
+    const daysDiff = Math.floor((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysDiff > 90) {
+      throw new Error('Date range cannot exceed 90 days');
+    }
+
+    const supabase = await createServerSupabaseClient();
+
+    let query = supabase
+      .from("events")
+      .select("created_at, event_type, event_data")
+      .eq("store_id", storeId)
+      .gte("created_at", startDate.toISOString())
+      .lte("created_at", endDate.toISOString());
+
+    if (metric === 'views') {
+      query = query.eq("event_type", "page_view");
+    } else if (metric === 'leads') {
+      query = query.eq("event_type", "lead_submit");
+    } else if (metric === 'revenue') {
+      query = query.eq("event_type", "purchase");
+    }
+
+    const { data: events, error } = await query;
+
+    if (error || !events) {
+      return [];
+    }
+
+    const dailyData = new Map<string, number>();
+
+    events.forEach((event) => {
+      const date = toISODateString(new Date(event.created_at));
+
+      if (metric === 'revenue') {
+        const revenue = (event.event_data as PurchaseEventData | null)?.revenue || 0;
+        dailyData.set(date, (dailyData.get(date) || 0) + revenue);
+      } else {
+        dailyData.set(date, (dailyData.get(date) || 0) + 1);
+      }
+    });
+
+    return Array.from(dailyData.entries())
+      .map(([date, value]) => ({ date, value }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  } catch (error) {
+    console.error('getTimeSeriesData error:', error);
+    return [];
+  }
+}
+
+export async function getComparisonMetrics(
+  storeId: string,
+  currentStartDate: Date,
+  currentEndDate: Date,
+  previousStartDate: Date,
+  previousEndDate: Date
+): Promise<ComparisonMetrics> {
+  try {
+    const supabase = await createServerSupabaseClient();
+
+    const [currentEvents, previousEvents] = await Promise.all([
+      supabase
+        .from("events")
+        .select("*")
+        .eq("store_id", storeId)
+        .gte("created_at", currentStartDate.toISOString())
+        .lte("created_at", currentEndDate.toISOString()),
+      supabase
+        .from("events")
+        .select("*")
+        .eq("store_id", storeId)
+        .gte("created_at", previousStartDate.toISOString())
+        .lte("created_at", previousEndDate.toISOString()),
+    ]);
+
+    const currentData = currentEvents.data || [];
+    const previousData = previousEvents.data || [];
+
+    const currentVisits = currentData.filter((e) => e.event_type === "page_view").length;
+    const previousVisits = previousData.filter((e) => e.event_type === "page_view").length;
+
+    const currentLeads = currentData.filter((e) => e.event_type === "lead_submit").length;
+    const previousLeads = previousData.filter((e) => e.event_type === "lead_submit").length;
+
+    const currentRevenue = currentData
+      .filter((e) => e.event_type === "purchase")
+      .reduce((sum, e) => sum + ((e.event_data as PurchaseEventData | null)?.revenue || 0), 0);
+    const previousRevenue = previousData
+      .filter((e) => e.event_type === "purchase")
+      .reduce((sum, e) => sum + ((e.event_data as PurchaseEventData | null)?.revenue || 0), 0);
+
+    const currentPurchases = currentData.filter((e) => e.event_type === "purchase").length;
+    const previousPurchases = previousData.filter((e) => e.event_type === "purchase").length;
+
+    const currentConversionRate = currentVisits > 0
+      ? ((currentLeads + currentPurchases) / currentVisits) * 100
+      : 0;
+    const previousConversionRate = previousVisits > 0
+      ? ((previousLeads + previousPurchases) / previousVisits) * 100
+      : 0;
+
+    return {
+      visits: {
+        current: currentVisits,
+        previous: previousVisits,
+        percentageChange: calculatePercentageChange(currentVisits, previousVisits),
+        isIncrease: currentVisits >= previousVisits,
+      },
+      revenue: {
+        current: currentRevenue,
+        previous: previousRevenue,
+        percentageChange: calculatePercentageChange(currentRevenue, previousRevenue),
+        isIncrease: currentRevenue >= previousRevenue,
+      },
+      leads: {
+        current: currentLeads,
+        previous: previousLeads,
+        percentageChange: calculatePercentageChange(currentLeads, previousLeads),
+        isIncrease: currentLeads >= previousLeads,
+      },
+      conversionRate: {
+        current: currentConversionRate,
+        previous: previousConversionRate,
+        percentageChange: calculatePercentageChange(currentConversionRate, previousConversionRate),
+        isIncrease: currentConversionRate >= previousConversionRate,
+      },
+    };
+  } catch (error) {
+    console.error('getComparisonMetrics error:', error);
+    return {
+      visits: { current: 0, previous: 0, percentageChange: 0, isIncrease: false },
+      revenue: { current: 0, previous: 0, percentageChange: 0, isIncrease: false },
+      leads: { current: 0, previous: 0, percentageChange: 0, isIncrease: false },
+      conversionRate: { current: 0, previous: 0, percentageChange: 0, isIncrease: false },
+    };
+  }
+}
+
+export async function getTopProductsByClicks(
+  storeId: string,
+  startDate: Date,
+  endDate: Date,
+  limit: number = 10
+): Promise<NewTopProduct[]> {
+  try {
+    const safeLimit = Math.min(limit, 50);
+    const supabase = await createServerSupabaseClient();
+
+    const { data: events, error } = await supabase
+      .from("events")
+      .select("*")
+      .eq("store_id", storeId)
+      .not("product_id", "is", null)
+      .gte("created_at", startDate.toISOString())
+      .lte("created_at", endDate.toISOString());
+
+    if (error || !events || events.length === 0) {
+      return [];
+    }
+
+    const productMap = new Map<string, { clicks: number; views: number }>();
+
+    events.forEach((event) => {
+      const productId = event.product_id!;
+
+      if (!productMap.has(productId)) {
+        productMap.set(productId, { clicks: 0, views: 0 });
+      }
+
+      const productData = productMap.get(productId)!;
+
+      if (event.event_type === "product_click") productData.clicks++;
+      if (event.event_type === "lead_submit") productData.clicks++;
+      if (event.event_type === "page_view") productData.views++;
+    });
+
+    const productIds = Array.from(productMap.keys());
+    const { data: products } = await supabase
+      .from("products")
+      .select("id, name, type")
+      .in("id", productIds);
+
+    const productInfoMap = new Map(
+      products?.map((p) => [p.id, { name: p.name, type: p.type }]) || []
+    );
+
+    const topProducts = Array.from(productMap.entries())
+      .map(([productId, data]) => {
+        const info = productInfoMap.get(productId);
+        const ctr = data.views > 0 ? (data.clicks / data.views) * 100 : 0;
+
+        return {
+          productId,
+          productName: info?.name || 'Unknown Product',
+          productType: info?.type as 'link' | 'lead_magnet' | 'digital_product',
+          clicks: data.clicks,
+          views: data.views,
+          ctr: parseFloat(ctr.toFixed(2)),
+        };
+      })
+      .sort((a, b) => b.clicks - a.clicks)
+      .slice(0, safeLimit);
+
+    return topProducts;
+  } catch (error) {
+    console.error('getTopProductsByClicks error:', error);
+    return [];
   }
 }

@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { LinkButton } from "@/components/ui/themed/button";
-import { IPhoneMockup } from "@/components/preview/device-preview/device-mockup";
+import { IPhoneMockup } from "@/components/product-cards/device-preview/device-mockup";
 import { ShoppingBag } from "lucide-react";
 import Image from "next/image";
 import type { DesignCustomization } from "@/lib/design/types";

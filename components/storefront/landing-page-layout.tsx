@@ -1,8 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import { usePreviewTheme } from "@/lib/preview/hooks/use-preview-theme";
-import { useValidLinks } from "@/lib/preview/hooks/use-valid-links";
+import { usePreviewTheme } from "@/lib/theme/hooks/use-preview-theme";
+import { useValidLinks } from "@/lib/theme/hooks/use-valid-links";
 import { ProfileAvatar } from "./sections/profile-avatar";
 import { ProfileHeader } from "./sections/profile-header";
 import { ProfileBio } from "./sections/profile-bio";

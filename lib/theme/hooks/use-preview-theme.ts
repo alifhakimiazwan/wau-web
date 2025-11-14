@@ -6,7 +6,7 @@
 
 import { useMemo } from "react";
 import { AVAILABLE_THEMES } from "@/lib/design/types";
-import { isLightColor, getBlockShape } from "@/lib/preview/actions";
+import { isLightColor, getBlockShape } from "@/lib/theme/actions";
 
 interface UsePreviewThemeParams {
   theme?: string;

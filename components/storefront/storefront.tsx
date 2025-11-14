@@ -2,7 +2,7 @@
 
 import { memo } from "react";
 import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
-import { usePreviewTheme } from "@/lib/preview/hooks/use-preview-theme";
+import { usePreviewTheme } from "@/lib/theme/hooks/use-preview-theme";
 import { StorefrontPreviewProps } from "@/lib/profile/types";
 import { DefaultLayout } from "./layouts/default-layout";
 import { HeroLayout } from "./layouts/hero-layout";

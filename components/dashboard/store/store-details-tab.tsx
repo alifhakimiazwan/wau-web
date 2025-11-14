@@ -8,8 +8,8 @@ import { Store } from "@/lib/profile/types";
 import { SocialLink } from "@/lib/profile/types";
 import dynamic from "next/dynamic";
 import { Product } from "@/lib/products/types";
-import { MobilePreviewSheet } from "@/components/preview/utils/preview-sheet";
-import { DevicePreview } from "@/components/preview/device-preview/device-preview";
+import { MobilePreviewSheet } from "@/components/product-cards/utils/preview-sheet";
+import { DevicePreview } from "@/components/product-cards/device-preview/device-preview";
 import type { DesignCustomization } from "@/lib/design/types";
 import { AddSectionDialog } from "./add-section-dialog";
 
@@ -36,10 +36,6 @@ export function StoreDetailsTab({
   products = [],
   designConfig,
 }: StoreDetailsTabProps) {
-  // const storeUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://wau.bio"}/${
-  //   store.slug
-  // }`;
-
   return (
     <>
       {/* Mobile Preview Button - Fixed to bottom right */}

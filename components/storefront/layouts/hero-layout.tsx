@@ -3,8 +3,8 @@
 import { memo } from "react";
 import { Typography } from "@/components/ui/typography";
 import { DEFAULT_BUTTON_CONFIG } from "@/lib/design/types";
-import { usePreviewTheme } from "@/lib/preview/hooks/use-preview-theme";
-import { useValidLinks } from "@/lib/preview/hooks/use-valid-links";
+import { usePreviewTheme } from "@/lib/theme/hooks/use-preview-theme";
+import { useValidLinks } from "@/lib/theme/hooks/use-valid-links";
 import type { StorefrontPreviewProps } from "@/lib/profile/types";
 import { ProfileBio } from "../sections/profile-bio";
 import { SocialIcons } from "../sections/social-icons";

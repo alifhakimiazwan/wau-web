@@ -1,36 +1,250 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
 
-First, run the development server:
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Environment Setup
+
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+```
+
+### 3. Run Supabase Locally
+
+```bash
+supabase start
+```
+
+### 4. Start Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Structure
 
-## Learn More
+```
+app/
+├── api/              # API routes (RESTful)
+│   ├── profile/      # Profile management
+│   ├── store/        # Store customization
+│   └── products/     # Product uploads
+├── (auth)/           # Auth pages (login, signup)
+└── (dashboard)/      # Protected routes
 
-To learn more about Next.js, take a look at the following resources:
+components/
+├── ui/               # shadcn/ui components
+├── product-cards/    # Reusable product card components
+├── storefront/       # Public storefront layouts
+├── profile/          # Profile components
+├── products/         # Product form components
+└── dashboard/        # Dashboard components
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+lib/
+├── supabase/         # Supabase clients
+├── guards/           # Auth helpers
+├── theme/            # Theme & design utilities
+├── axios.ts          # Axios config
+└── utils.ts          # Utilities
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+supabase/
+└── migrations/       # Database migrations
 
-## Deploy on Vercel
+docs/
+└── API.md            # API documentation
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Key Commands
+
+| Command             | Description                       |
+| ------------------- | --------------------------------- |
+| `npm run dev`       | Start dev server (with Turbopack) |
+| `npm run build`     | Production build                  |
+| `npm test`          | Run tests                         |
+| `supabase start`    | Start local Supabase              |
+| `supabase db reset` | Reset & apply migrations          |
+| `npm run db:types`  | Generate TypeScript types from DB |
+
+---
+
+## Working with the Database
+
+**ALWAYS use migrations for schema changes:**
+
+```bash
+# 1. Create migration
+supabase migration new add_something
+
+# 2. Write SQL in the generated file
+
+# 3. Apply migration
+supabase db reset
+
+# 4. Generate types
+npm run db:types
+```
+
+See `CLAUDE.md` for detailed database patterns.
+
+---
+
+## API Development
+
+**See [docs/API.md](./docs/API.md) for complete API reference.**
+
+---
+
+## Authentication
+
+Routes automatically check:
+
+- ✅ User is logged in
+- ✅ User owns the resource
+- ✅ User has completed onboarding
+
+Use helpers:
+
+```typescript
+// For routes needing user + store
+import { requireStore } from "@/lib/guards/onboarding-guard";
+
+export default async function Page() {
+  const { user, store } = await requireStore(); // Auto-redirects if needed
+  // ...
+}
+```
+
+```typescript
+// For server actions/API routes
+import { getAuthUserWithStore } from "@/lib/guards/auth-helpers";
+
+export async function updateProfile() {
+  const authResult = await getAuthUserWithStore();
+  if (!authResult.success) {
+    return { success: false, error: authResult.error };
+  }
+  // ...
+}
+```
+
+---
+
+## Common Tasks
+
+### Adding a New API Route
+
+1. Create `/app/api/resource/route.ts`
+2. Export HTTP method functions (GET, POST, PUT, DELETE)
+3. Use auth helpers
+4. Return `{ success: boolean, ... }`
+
+```typescript
+import { NextResponse } from "next/server";
+import { getAuthUserWithStore } from "@/lib/guards/auth-helpers";
+
+export async function PUT(request: Request) {
+  const authResult = await getAuthUserWithStore();
+  if (!authResult.success) {
+    return NextResponse.json(
+      { success: false, error: authResult.error },
+      { status: 401 }
+    );
+  }
+
+  // Your logic here
+  return NextResponse.json({ success: true });
+}
+```
+
+### Making API Calls
+
+Always use `axios`:
+
+```typescript
+import axios from "axios";
+
+const { data } = await axios.put("/api/profile", {
+  name: "Store Name",
+});
+
+if (data.success) {
+  // Success
+}
+```
+
+### Adding UI Components
+
+```bash
+# Add shadcn component
+npx shadcn@latest add button
+```
+
+## Development Workflow
+
+1. **Pull latest changes**
+
+   ```bash
+   git pull
+   ```
+
+2. **Apply migrations & update types**
+
+   ```bash
+   supabase db reset
+   npm run db:types
+   ```
+
+3. **Start development**
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Make changes**
+   - Follow patterns in `CLAUDE.md`
+   - Use existing helpers (don't duplicate)
+   - Test locally
+
+5. **Commit**
+   ```bash
+   git add .
+   git commit -m "feat: add feature"
+   git push
+   ```
+
+---
+
+## Common Issues
+
+**"Not authenticated" error**
+
+- Make sure you're logged in
+- Check if session is expired
+
+**"Store not found" error**
+
+- Complete onboarding first at `/onboarding`
+
+**Type errors after migration**
+
+- Run `npm run db:types`
+
+**Supabase not running**
+
+- Run `supabase start`
+
+---
+
+**Questions?** Ask the team! 🚀

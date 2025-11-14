@@ -6,6 +6,7 @@
 
 import { useState, useRef } from "react";
 import { toast } from "sonner";
+import axios from "axios";
 import { compressImage } from "@/lib/image/actions";
 import { IMAGE_UPLOAD } from "@/components/profile/constants";
 
@@ -66,12 +67,7 @@ export function useImageUpload({
       formData.append("type", type);
       formData.append("oldImageUrl", currentImageUrl || "");
 
-      const response = await fetch("/api/profile/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const result = await response.json();
+      const { data: result } = await axios.post("/api/profile", formData);
 
       if (!result.success) {
         throw new Error(result.error || "Upload failed");
@@ -122,13 +118,9 @@ export function useImageUpload({
 
     setIsUploading(true);
     try {
-      const response = await fetch("/api/profile/upload", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: currentImageUrl, type }),
+      const { data: result } = await axios.delete("/api/profile", {
+        params: { imageUrl: currentImageUrl },
       });
-
-      const result = await response.json();
 
       if (!result.success) {
         throw new Error(result.error || "Delete failed");

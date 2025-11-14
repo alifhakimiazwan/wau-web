@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "sonner";
+import axios from "axios";
 
 interface UseThumbnailUploadOptions {
   maxSizeMB?: number;
@@ -45,14 +46,9 @@ export function useThumbnailUpload({
       formData.append("type", "product_thumbnail");
 
       try {
-        const response = await fetch("/api/products/upload", {
-          method: "POST",
-          body: formData,
-        });
+        const { data } = await axios.post("/api/products", formData);
 
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
+        if (!data.success) {
           throw new Error(data.error || "Upload failed");
         }
 

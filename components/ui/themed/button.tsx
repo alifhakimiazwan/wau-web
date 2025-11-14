@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import type { ButtonStyle } from "@/lib/design/types";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { useState } from "react";
-import { isLightColor } from "@/lib/preview/actions";
+import { isLightColor } from "@/lib/theme/actions";
 
 interface LinkButtonProps {
   icon?: React.ComponentType<{ className?: string }>;

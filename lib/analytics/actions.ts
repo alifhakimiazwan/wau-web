@@ -375,3 +375,77 @@ export async function trackPurchase(
     return handleAnalyticsError(error, 'An unexpected error occurred while tracking purchase')
   }
 }
+
+// ============================================================================
+// FETCH ANALYTICS DATA
+// ============================================================================
+
+import {
+  getTimeSeriesData,
+  getComparisonMetrics,
+  getTopProductsByClicks,
+  getTrafficSources,
+} from './queries'
+import { getPreviousPeriod } from './date-utils'
+import type { MetricType } from './types'
+
+import { getCachedAnalytics, getAnalyticsCacheKey } from '@/lib/cache/redis'
+
+export async function fetchAnalyticsData(
+  storeId: string,
+  startDate: Date,
+  endDate: Date,
+  metric: MetricType
+) {
+  try {
+    const { startDate: previousStartDate, endDate: previousEndDate } = getPreviousPeriod(
+      startDate,
+      endDate
+    )
+
+    const dateRange = `${startDate.toISOString()}_${endDate.toISOString()}`
+    const cacheKey = getAnalyticsCacheKey(storeId, dateRange, metric)
+
+    const [timeSeriesData, comparisonMetrics, topProducts, trafficSourcesResult] =
+      await getCachedAnalytics(
+        cacheKey,
+        async () => {
+          return await Promise.all([
+            getTimeSeriesData(storeId, startDate, endDate, metric),
+            getComparisonMetrics(storeId, startDate, endDate, previousStartDate, previousEndDate),
+            getTopProductsByClicks(storeId, startDate, endDate, 10),
+            getTrafficSources(storeId, {
+              from: startDate.toISOString(),
+              to: endDate.toISOString(),
+            }),
+          ])
+        },
+        300
+      )
+
+    const trafficSources = trafficSourcesResult.success && trafficSourcesResult.data
+      ? trafficSourcesResult.data.map((source) => ({
+          source: source.source,
+          visits: source.views,
+          percentage: 0,
+          utmSource: source.source,
+          utmMedium: source.medium,
+        }))
+      : []
+
+    const totalVisits = trafficSources.reduce((sum, source) => sum + source.visits, 0)
+    trafficSources.forEach((source) => {
+      source.percentage = totalVisits > 0 ? (source.visits / totalVisits) * 100 : 0
+    })
+
+    return {
+      timeSeriesData,
+      comparisonMetrics,
+      topProducts,
+      trafficSources,
+    }
+  } catch (error) {
+    console.error('Error fetching analytics data:', error)
+    throw error
+  }
+}

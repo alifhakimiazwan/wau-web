@@ -8,7 +8,7 @@ import Link from "next/link";
 import { getInitials } from "@/lib/profile/actions";
 import { Store } from "@/lib/profile/types";
 import { SocialLink } from "@/lib/profile/types";
-import { getSocialIcon } from "@/lib/preview/actions";
+import { getSocialIcon } from "@/lib/theme/actions";
 
 interface ProfileCardProps {
   store: Store;

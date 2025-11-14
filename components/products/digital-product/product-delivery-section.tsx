@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import axios from "axios";
 import {
   UseFormRegister,
   FieldErrors,
@@ -59,14 +60,9 @@ export function ProductDeliverySection({
       formData.append("type", "lead_magnet_file");
 
       try {
-        const response = await fetch("/api/products/upload", {
-          method: "POST",
-          body: formData,
-        });
+        const { data } = await axios.post("/api/products", formData);
 
-        const data = await response.json();
-
-        if (!response.ok || !data.success) {
+        if (!data.success) {
           throw new Error(data.error || "Upload failed");
         }
 

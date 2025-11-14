@@ -3,16 +3,16 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { DesignCustomizer } from "@/components/dashboard/design/design-customizer";
-import { DevicePreview } from "@/components/preview/device-preview/device-preview";
+import { DevicePreview } from "@/components/product-cards/device-preview/device-preview";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import type { DesignCustomization } from "@/lib/design/types";
-import { MobilePreviewSheet } from "@/components/preview/utils/preview-sheet";
+import { MobilePreviewSheet } from "@/components/product-cards/utils/preview-sheet";
 import { DEFAULT_DESIGN } from "@/lib/design/types";
 import { Store, Product } from "@/lib/profile/types";
 import { SocialLink } from "@/lib/profile/types";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/axios";
+import axios from "axios";
 
 interface StoreDesignClientProps {
   store: Store;
@@ -38,7 +38,7 @@ export function StoreDesignTab({
       try {
         console.log("Saving design:", { storeId: store.id, design });
 
-        const { data } = await api.post("/api/store/design/update", {
+        const { data } = await axios.put("/api/store/design", {
           storeId: store.id,
           design,
         });

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { cn } from "@/lib/utils";
 import type { AvatarConfig } from "@/lib/design/types";
-import { getBlockShape } from "@/lib/preview/actions";
+import { getBlockShape } from "@/lib/theme/actions";
 
 interface ThemedAvatarProps {
   src?: string;

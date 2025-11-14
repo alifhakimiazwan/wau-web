@@ -5,7 +5,7 @@ import { ExternalLink } from "lucide-react";
 import type { DesignCustomization } from "@/lib/design/types";
 import { cn } from "@/lib/utils";
 import { getBorderRadius } from "@/lib/utils/design-helpers";
-import { getYoutubeEmbedUrl, getSpotifyEmbedUrl } from "@/lib/preview/actions";
+import { getYoutubeEmbedUrl, getSpotifyEmbedUrl } from "@/lib/theme/actions";
 import { useAnalyticsContext } from "@/components/analytics/analytics-provider";
 import { trackProductClick } from "@/lib/analytics/actions";
 

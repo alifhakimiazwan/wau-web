@@ -4,7 +4,11 @@ import { DesignSchema } from '@/lib/design/schemas'
 import { ZodError } from 'zod'
 import { getAuthUserWithStore } from '@/lib/guards/auth-helpers'
 
-export async function POST(request: Request) {
+// ========================================
+// PUT /api/store/design - Update store design
+// ========================================
+
+export async function PUT(request: Request) {
   try {
     const body = await request.json()
     const { storeId, design } = DesignSchema.parse(body)

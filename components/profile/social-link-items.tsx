@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Loader2, Check, X } from "lucide-react";
 import type { Database } from "@/types/database.types";
-import { getSocialIcon } from "@/lib/preview/actions";
+import { getSocialIcon } from "@/lib/theme/actions";
 import { getPlaceholder } from "@/lib/profile/actions";
 import { SAVED_INDICATOR_DELAY } from "./constants";
 import { useSocialLinkMutation } from "@/lib/profile/hooks/use-social-link-mutation";

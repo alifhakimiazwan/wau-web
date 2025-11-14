@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { getSocialIcon } from "@/lib/preview/actions";
+import { getSocialIcon } from "@/lib/theme/actions";
 import type { SocialLink } from "@/lib/profile/types";
 
 interface SocialIconsProps {

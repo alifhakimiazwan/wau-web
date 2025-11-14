@@ -5,6 +5,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { Typography } from "@/components/ui/typography";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,8 +25,8 @@ import { ImageUpload } from "./image-upload";
 import { PLATFORMS } from "@/lib/profile/types";
 import { profileSchema } from "@/lib/profile/schemas";
 import { ProfileFormProps } from "@/lib/profile/types";
-import { DevicePreview } from "../preview/device-preview/device-preview";
-import { MobilePreviewSheet } from "../preview/utils/preview-sheet";
+import { DevicePreview } from "../product-cards";
+import { MobilePreviewSheet } from "../product-cards";
 
 type ProfileFormData = z.infer<typeof profileSchema>;
 
@@ -93,16 +94,10 @@ export function ProfileForm({
         // Filter out empty URLs
         const validLinks = data.socialLinks.filter((link) => link.url.trim());
 
-        const response = await fetch("/api/profile/update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...data,
-            socialLinks: validLinks,
-          }),
+        const { data: result } = await axios.put("/api/profile", {
+          ...data,
+          socialLinks: validLinks,
         });
-
-        const result = await response.json();
 
         if (result.success) {
           toast.success("Profile updated successfully!");

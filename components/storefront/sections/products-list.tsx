@@ -3,12 +3,12 @@
 import type { Database } from "@/types/database.types";
 import type { DesignCustomization } from "@/lib/design/types";
 import { AVAILABLE_THEMES } from "@/lib/design/types";
-import { LinkClassicPreview } from "@/components/preview/link/link-classic-preview";
-import { LinkCalloutPreview } from "@/components/preview/link/link-callout-preview";
-import { LinkEmbedPreview } from "@/components/preview/link/link-embed-preview";
-import { DigitalProductClassicPreview } from "@/components/preview/digital-product/digital-product-classic-preview";
-import { DigitalProductCalloutPreview } from "@/components/preview/digital-product/digital-product-callout-preview";
-import { LeadMagnetPreview } from "@/components/preview/lead-magnet/lead-magnet-preview";
+import { LinkClassicPreview } from "@/components/product-cards/link/link-classic-preview";
+import { LinkCalloutPreview } from "@/components/product-cards/link/link-callout-preview";
+import { LinkEmbedPreview } from "@/components/product-cards/link/link-embed-preview";
+import { DigitalProductClassicPreview } from "@/components/product-cards/digital-product/digital-product-classic-preview";
+import { DigitalProductCalloutPreview } from "@/components/product-cards/digital-product/digital-product-callout-preview";
+import { LeadMagnetPreview } from "@/components/product-cards/lead-magnet/lead-magnet-preview";
 import { isSection } from "@/lib/products/types";
 
 type Product = Database["public"]["Tables"]["products"]["Row"];
