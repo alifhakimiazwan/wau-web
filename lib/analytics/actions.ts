@@ -389,7 +389,7 @@ import {
 import { getPreviousPeriod } from './date-utils'
 import type { MetricType } from './types'
 
-import { getCachedAnalytics, getAnalyticsCacheKey } from '@/lib/cache/redis'
+import { getCachedData, cacheKeys } from '@/lib/cache/redis'
 
 export async function fetchAnalyticsData(
   storeId: string,
@@ -403,11 +403,13 @@ export async function fetchAnalyticsData(
       endDate
     )
 
-    const dateRange = `${startDate.toISOString()}_${endDate.toISOString()}`
-    const cacheKey = getAnalyticsCacheKey(storeId, dateRange, metric)
+    // Normalize dates to date-only strings for consistent cache keys
+    // This prevents cache misses from millisecond differences
+    const dateRange = `${startDate.toISOString().split('T')[0]}_${endDate.toISOString().split('T')[0]}`
+    const cacheKey = cacheKeys.analytics(storeId, dateRange, metric)
 
     const [timeSeriesData, comparisonMetrics, topProducts, trafficSourcesResult] =
-      await getCachedAnalytics(
+      await getCachedData(
         cacheKey,
         async () => {
           return await Promise.all([

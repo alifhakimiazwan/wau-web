@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { z, ZodError } from 'zod'
 import { getAuthUserWithStore, getAuthUser } from '@/lib/guards/auth-helpers'
+import { invalidateStoreCache } from '@/lib/cache/invalidation'
 
 // ========================================
 // PUT /api/profile - Update profile data
@@ -110,6 +111,9 @@ export async function PUT(request: Request) {
           })
       }
     }
+
+    // Invalidate all store caches (profile and social links changed)
+    await invalidateStoreCache(store.id, store.slug)
 
     return NextResponse.json({ success: true })
   } catch (error) {

@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getCachedData, cacheKeys } from "@/lib/cache/redis";
+import { invalidateProductCache } from "@/lib/cache/invalidation";
 import {
   leadMagnetSchema,
   type LeadMagnetInput,
@@ -23,9 +25,7 @@ interface ActionResponse<T = Product> {
   error?: string;
 }
 
-/**
- * Generate a unique slug for a product within a store
- */
+
 async function generateUniqueSlug(
   name: string,
   storeId: string
@@ -34,17 +34,14 @@ async function generateUniqueSlug(
 
   let slug = generateSlug(name);
 
-  // If slug generation failed, use fallback
   if (!isValidSlug(slug)) {
     slug = getFallbackSlug();
   }
 
-  // Check for duplicates and append counter if needed
   let counter = 0;
   let uniqueSlug = slug;
 
   while (counter < 100) {
-    // Limit attempts
     const { data: existing } = await supabase
       .from("products")
       .select("id")
@@ -60,7 +57,6 @@ async function generateUniqueSlug(
     uniqueSlug = `${slug}-${counter}`;
   }
 
-  // If we've tried 100 times, use timestamp
   return `${slug}-${Date.now()}`;
 }
 
@@ -71,7 +67,6 @@ export async function createLeadMagnetProduct(
   productData: Omit<LeadMagnetInput, 'status'> & { status?: "draft" | "published" }
 ): Promise<ActionResponse> {
   try {
-    // Check auth + store
     const authResult = await getAuthUserWithStore();
     if (!authResult.success) {
       return { success: false, error: authResult.error };
@@ -81,10 +76,8 @@ export async function createLeadMagnetProduct(
     const validatedData = leadMagnetSchema.parse(productData);
     const supabase = await createServerSupabaseClient();
 
-    // Generate unique slug
     const slug = await generateUniqueSlug(validatedData.name, store.id);
 
-    // Build type_config
     const typeConfig = {
       subtitle: validatedData.subtitle,
       buttonText: validatedData.buttonText,
@@ -95,7 +88,6 @@ export async function createLeadMagnetProduct(
       successMessage: validatedData.successMessage,
     };
 
-    // Insert product
     const { data: product, error: insertError } = await supabase
       .from("products")
       .insert({
@@ -117,6 +109,8 @@ export async function createLeadMagnetProduct(
         error: "Failed to create lead magnet. Please try again.",
       };
     }
+
+    await invalidateProductCache(store.id, store.slug);
 
     return {
       success: true,
@@ -147,7 +141,6 @@ export async function uploadProductFile(
   type: "product_thumbnail" | "lead_magnet_file"
 ): Promise<ActionResponse<{ url: string; path: string; filename: string; size: number }>> {
   try {
-    // Check auth + store
     const authResult = await getAuthUserWithStore();
     if (!authResult.success) {
       return { success: false, error: authResult.error };
@@ -156,7 +149,6 @@ export async function uploadProductFile(
 
     const supabase = await createServerSupabaseClient();
 
-    // Validate file type and size
     const MAX_THUMBNAIL_SIZE = 5 * 1024 * 1024; // 5MB
     const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
     const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -203,7 +195,6 @@ export async function uploadProductFile(
       type === "product_thumbnail" ? "products/thumbnails" : "products/files";
     const filePath = `${folderPath}/${user.id}/${fileName}`;
 
-    // Upload to Supabase Storage
     const { error: uploadError } = await supabase.storage
       .from("user-uploads")
       .upload(filePath, file, {
@@ -219,7 +210,6 @@ export async function uploadProductFile(
       };
     }
 
-    // Get public URL
     const {
       data: { publicUrl },
     } = supabase.storage.from("user-uploads").getPublicUrl(filePath);
@@ -249,7 +239,6 @@ export async function createLinkProduct(
   productData: LinkSchema
 ): Promise<ActionResponse> {
   try {
-    // Check auth + store
     const authResult = await getAuthUserWithStore();
     if (!authResult.success) {
       return { success: false, error: authResult.error };
@@ -259,11 +248,9 @@ export async function createLinkProduct(
     const validatedData = linkSchema.parse(productData);
     const supabase = await createServerSupabaseClient();
 
-    // Generate unique slug - use title if available, otherwise use style + timestamp
     const slugBase = validatedData.name || `${validatedData.style}-link`;
     const slug = await generateUniqueSlug(slugBase, store.id);
 
-    // Build type_config
     const typeConfig = {
       style: validatedData.style,
       name: validatedData.name,
@@ -272,7 +259,6 @@ export async function createLinkProduct(
       url: validatedData.url,
     };
 
-    // Insert product
     const { data: product, error: insertError } = await supabase
       .from("products")
       .insert({
@@ -294,6 +280,8 @@ export async function createLinkProduct(
         error: "Failed to create link. Please try again.",
       };
     }
+
+    await invalidateProductCache(store.id, store.slug);
 
     return {
       success: true,
@@ -327,22 +315,30 @@ export async function getStoreProducts(): Promise<ActionResponse <Product[]>>{
 
     const { store } = authResult;
 
-    const supabase = await createServerSupabaseClient();
+    const products = await getCachedData(
+      cacheKeys.storeProducts(store.id),
+      async () => {
+        const supabase = await createServerSupabaseClient();
+        const {data, error} = await supabase
+          .from("products")
+          .select("*")
+          .eq("store_id", store.id)
+          .order("position", {ascending: true})
 
-    const {data: products, error} = await supabase.from("products").select("*").eq("store_id", store.id).order("position", {ascending: true})
+        if(error){
+          console.error("Fetch products error:", error);
+          throw new Error("Failed to fetch products from database")
+        }
 
-    if(error){
-      console.error("Fetch products, error", error);
-      return {
-        success: false,
-        error: "Failed to fetch products. Please try again."
-      }
-    }
+        return data
+      },
+      60 // 1 minute TTL
+    )
 
     return {
-      success: true, data: products
+      success: true,
+      data: products
     }
-
 
   } catch (error) {
     console.error("Get products error:", error);
@@ -373,6 +369,9 @@ export async function updateProductPositions(productsIds: string[]): Promise<Act
         error: "Failed to update product order. Please try again."
       }
     }
+
+    await invalidateProductCache(store.id, store.slug);
+
     return {
       success: true,
       data: null
@@ -393,7 +392,6 @@ export async function createDigitalProduct(
   productData: Omit<DigitalProductInput, 'status'> & { status?: "draft" | "published"; reviews?: unknown[] }
 ): Promise<ActionResponse> {
   try {
-    // Check auth + store
     const authResult = await getAuthUserWithStore();
     if (!authResult.success) {
       return { success: false, error: authResult.error };
@@ -403,7 +401,6 @@ export async function createDigitalProduct(
     const validatedData = digitalProductSchema.parse(productData);
     const supabase = await createServerSupabaseClient();
 
-    // Generate unique slug
     const slug = await generateUniqueSlug(validatedData.cardTitle, store.id);
 
     // Build type_config
@@ -427,7 +424,6 @@ export async function createDigitalProduct(
       reviews: productData.reviews || [],
     };
 
-    // Insert product
     const { data: product, error: insertError } = await supabase
       .from("products")
       .insert({
@@ -449,6 +445,8 @@ export async function createDigitalProduct(
         error: "Failed to create digital product. Please try again.",
       };
     }
+
+    await invalidateProductCache(store.id, store.slug);
 
     // Revalidate products list
     revalidatePath("/store/products");
@@ -497,6 +495,10 @@ export async function deleteProduct(productId: string): Promise<ActionResponse<n
         error: "Failed to delete product. Please try again"
       }
     }
+
+    // Invalidate caches
+    await invalidateProductCache(store.id, store.slug);
+
     revalidatePath("/store");
     revalidatePath("/store/products");
 
@@ -816,6 +818,9 @@ export async function updateLinkProduct(
       };
     }
 
+    // Invalidate caches
+    await invalidateProductCache(store.id, store.slug);
+
     revalidatePath("/store/products");
 
     return {
@@ -871,13 +876,11 @@ export async function updateLeadMagnetProduct(
       };
     }
 
-    // Generate new slug only if name changed
     let slug = existingProduct.slug;
     if (validatedData.name !== existingProduct.name) {
       slug = await generateUniqueSlug(validatedData.name, store.id);
     }
 
-    // Build type_config
     const typeConfig = {
       subtitle: validatedData.subtitle,
       buttonText: validatedData.buttonText,
@@ -888,7 +891,6 @@ export async function updateLeadMagnetProduct(
       successMessage: validatedData.successMessage,
     };
 
-    // Update product
     const { data: product, error: updateError } = await supabase
       .from("products")
       .update({
@@ -911,6 +913,8 @@ export async function updateLeadMagnetProduct(
         error: "Failed to update lead magnet. Please try again.",
       };
     }
+
+    await invalidateProductCache(store.id, store.slug);
 
     revalidatePath("/store/products");
 
@@ -952,7 +956,6 @@ export async function updateDigitalProduct(
     const validatedData = digitalProductSchema.parse(productData);
     const supabase = await createServerSupabaseClient();
 
-    // Fetch existing product to check if name changed
     const { data: existingProduct } = await supabase
       .from("products")
       .select("name, slug")
@@ -967,13 +970,11 @@ export async function updateDigitalProduct(
       };
     }
 
-    // Generate new slug only if name changed
     let slug = existingProduct.slug;
     if (validatedData.cardTitle !== existingProduct.name) {
       slug = await generateUniqueSlug(validatedData.cardTitle, store.id);
     }
 
-    // Build type_config
     const typeConfig = {
       style: validatedData.style,
       cardTitle: validatedData.cardTitle,
@@ -994,7 +995,6 @@ export async function updateDigitalProduct(
       reviews: productData.reviews || [],
     };
 
-    // Update product
     const { data: product, error: updateError } = await supabase
       .from("products")
       .update({
@@ -1017,6 +1017,9 @@ export async function updateDigitalProduct(
         error: "Failed to update digital product. Please try again.",
       };
     }
+
+    // Invalidate caches
+    await invalidateProductCache(store.id, store.slug);
 
     revalidatePath("/store/products");
 

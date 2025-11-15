@@ -7,7 +7,7 @@ import {
   getTrafficSources,
 } from '@/lib/analytics/queries'
 import { AnalyticsDashboard } from '@/components/analytics/analytics-dashboard'
-import { getCachedAnalytics, getAnalyticsCacheKey } from '@/lib/cache/redis'
+import { getCachedData, cacheKeys } from '@/lib/cache/redis'
 
 export default async function AnalyticsPage() {
   const { store } = await requireStore()
@@ -18,9 +18,9 @@ export default async function AnalyticsPage() {
     endDate
   )
 
-  const cacheKey = getAnalyticsCacheKey(store.id, 'last14days')
+  const cacheKey = cacheKeys.analytics(store.id, 'last14days')
   const [timeSeriesData, comparisonMetrics, topProducts, trafficSourcesResult] =
-    await getCachedAnalytics(
+    await getCachedData(
       cacheKey,
       async () => {
         return await Promise.all([
