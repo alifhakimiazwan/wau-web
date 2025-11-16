@@ -14,7 +14,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
 import { ProductBasicInfo } from "@/components/products/product-basic-info";
 import { ThumbnailUpload } from "@/components/products/thumbnail-upload";
@@ -184,223 +183,131 @@ export function CreateLeadMagnetForm({
   };
 
   return (
-    <div className="flex gap-8">
-      <div className="flex-1">
-        <form onSubmit={(e) => e.preventDefault()}>
-          {/* Basic Information Section */}
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center flex-shrink-0">
-                <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <Typography variant="h4" font="serif">
-                  Basic Information
-                </Typography>
-                <Typography variant="muted" className="mt-1">
-                  Tell us about your lead magnet
-                </Typography>
-              </div>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {/* Form Section */}
+      <div className="lg:col-span-2 space-y-8">
+        {/* Basic Information Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center flex-shrink-0">
+              <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="sm:max-w-3xl md:col-span-2">
-              <ProductBasicInfo register={register} errors={errors} />
-            </div>
+            <Typography variant="h3" font="serif">
+              Basic Information
+            </Typography>
           </div>
-          <Separator className="my-8" />
-          {/* Thumbnail Section */}
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-950 flex items-center justify-center flex-shrink-0">
-                <ImageIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div>
-                <Typography variant="h4" font="serif">
-                  Thumbnail
-                </Typography>
-                <Typography variant="muted" className="mt-1">
-                  Add a visual representation for your lead magnet
-                </Typography>
-              </div>
+          <ProductBasicInfo register={register} errors={errors} />
+        </section>
+
+        {/* Thumbnail Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center flex-shrink-0">
+              <ImageIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="sm:max-w-3xl md:col-span-2">
-              <ThumbnailUpload
-                value={thumbnailUrl || undefined}
-                onChange={(url) => {
-                  setThumbnailUrl(url);
-                  setValue("thumbnail", url || "");
-                }}
-              />
-            </div>
+            <Typography variant="h3" font="serif">
+              Thumbnail
+            </Typography>
           </div>
-          <Separator className="my-8" />
-          {/* Customer Fields Section */}
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-950 flex items-center justify-center flex-shrink-0">
-                <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
-              </div>
-              <div>
-                <Typography variant="h4" font="serif">
-                  Customer Information
-                </Typography>
-                <Typography variant="muted" className="mt-1">
-                  What information do you need from customers?
-                </Typography>
-              </div>
+          <ThumbnailUpload
+            value={thumbnailUrl || undefined}
+            onChange={(url) => {
+              setThumbnailUrl(url);
+              setValue("thumbnail", url || "");
+            }}
+          />
+        </section>
+
+        {/* Customer Fields Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center flex-shrink-0">
+              <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="sm:max-w-3xl md:col-span-2">
-              <CustomerFieldsSelector
-                watch={watch}
-                setValue={setValue}
-                errors={errors.customerFields}
-              />
-            </div>
+            <Typography variant="h3" font="serif">
+              Customer Information
+            </Typography>
           </div>
-          <Separator className="my-8" />
-          {/* Freebie Delivery Section */}
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-950 flex items-center justify-center flex-shrink-0">
-                <Gift className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-              </div>
-              <div>
-                <Typography variant="h4" font="serif">
-                  Freebie Delivery
-                </Typography>
-                <Typography variant="muted" className="mt-1">
-                  How will customers receive their free resource?
-                </Typography>
-              </div>
+          <CustomerFieldsSelector
+            watch={watch}
+            setValue={setValue}
+            errors={errors.customerFields}
+          />
+        </section>
+
+        {/* Freebie Delivery Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center flex-shrink-0">
+              <Gift className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="sm:max-w-3xl md:col-span-2">
-              <FreebieSelector
-                register={register}
-                errors={errors}
-                watch={watch}
-                setValue={setValue}
-              />
-            </div>
+            <Typography variant="h3" font="serif">
+              Freebie Delivery
+            </Typography>
           </div>
-          <Separator className="my-8" />
-          {/* Success Message Section */}
-          <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-            <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div>
-                <Typography variant="h4" font="serif">
-                  Success Message
-                </Typography>
-                <Typography variant="muted" className="mt-1">
-                  Customize the thank you message shown after submission
-                </Typography>
-              </div>
+          <FreebieSelector
+            register={register}
+            errors={errors}
+            watch={watch}
+            setValue={setValue}
+          />
+        </section>
+
+        {/* Success Message Section */}
+        <section>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center flex-shrink-0">
+              <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             </div>
-            <div className="sm:max-w-3xl md:col-span-2">
-              <SuccessMessage register={register} errors={errors} />
-            </div>
+            <Typography variant="h3" font="serif">
+              Success Message
+            </Typography>
           </div>
-          <Separator className="my-8" />
-          {/* Error Message */}
-          {errors.root && (
-            <div className="mb-8">
-              <div className="p-4 border border-destructive bg-destructive/10 rounded-lg">
-                <Typography variant="small" className="text-destructive">
-                  {errors.root.message}
-                </Typography>
-              </div>
-            </div>
-          )}
-          {/* Validation Errors Summary
-          {Object.keys(errors).length > 0 && !errors.root && (
-            <div className="mb-8">
-              <div className="p-4 border border-destructive bg-destructive/10 rounded-lg">
-                <Typography
-                  variant="small"
-                  className="text-destructive font-semibold mb-2"
-                >
-                  Please fix the following errors:
-                </Typography>
-                <ul className="list-disc list-inside space-y-1">
-                  {errors.name && (
-                    <Typography variant="small" className="text-destructive">
-                      • {errors.name.message}
-                    </Typography>
-                  )}
-                  {errors.freebieLink && (
-                    <Typography variant="small" className="text-destructive">
-                      •{" "}
-                      {errors.freebieLink.message ||
-                        "Link information is incomplete"}
-                    </Typography>
-                  )}
-                  {errors.freebieFile && (
-                    <Typography variant="small" className="text-destructive">
-                      • {errors.freebieFile.message || "File is required"}
-                    </Typography>
-                  )}
-                  {errors.successMessage && (
-                    <Typography variant="small" className="text-destructive">
-                      • {errors.successMessage.message}
-                    </Typography>
-                  )}
-                </ul>
-              </div>
-            </div>
-          )} */}
-          {/* Action Buttons */}
-          <div className="flex items-center justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push("/store/products")}
-              disabled={isPending}
-              className="rounded-full"
-            >
-              Cancel
-            </Button>
-            <div className="flex items-center gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSubmit((data) => onSubmit(data, "draft"))}
-                disabled={isPending}
-                className="rounded-full"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {isEditMode ? "Updating..." : "Saving..."}
-                  </>
-                ) : (
-                  "Save Draft"
-                )}
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSubmit((data) => onSubmit(data, "published"))}
-                disabled={isPending}
-                className="rounded-full"
-              >
-                {isPending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {isEditMode ? "Updating..." : "Publishing..."}
-                  </>
-                ) : isEditMode ? (
-                  "Update Lead Magnet"
-                ) : (
-                  "Publish Lead Magnet"
-                )}
-              </Button>
-            </div>
-          </div>
-        </form>
+          <SuccessMessage register={register} errors={errors} />
+        </section>
+
+        {/* Submit Buttons */}
+        <div className="flex gap-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleSubmit((data) => onSubmit(data, "draft"))}
+            disabled={isPending}
+            className="flex-1"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isEditMode ? "Updating..." : "Saving..."}
+              </>
+            ) : (
+              "Save as Draft"
+            )}
+          </Button>
+
+          <Button
+            type="button"
+            onClick={handleSubmit((data) => onSubmit(data, "published"))}
+            disabled={isPending}
+            className="flex-1"
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isEditMode ? "Updating..." : "Publishing..."}
+              </>
+            ) : (
+              <>
+                <CheckCircle className="mr-2 h-4 w-4" />
+                {isEditMode ? "Update Lead Magnet" : "Publish Lead Magnet"}
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
-      {/* Preview Column */}
-      <div className="lg:w-96 hidden lg:block">
+      {/* Preview Section */}
+      <div className="hidden lg:block">
         <div className="sticky top-24">
           <LeadMagnetPreviewWrapper
             control={control}
@@ -411,7 +318,7 @@ export function CreateLeadMagnetForm({
       </div>
 
       {/* Mobile Preview */}
-      <div className="lg:hidden mt-8">
+      <div className="lg:hidden">
         <LeadMagnetPreviewWrapper
           control={control}
           thumbnailUrl={thumbnailUrl}
