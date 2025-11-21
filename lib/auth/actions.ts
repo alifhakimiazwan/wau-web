@@ -141,6 +141,12 @@ export async function login(formData: FormData): Promise<AuthResponse> {
   
       return { success: true }
     } catch (error) {
+      // Handle redirect first (Next.js throws NEXT_REDIRECT) - this is not an error
+      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+        throw error
+      }
+
+      // Now log actual errors
       console.error('Login exception:', error)
 
       if (error instanceof z.ZodError) {
@@ -148,11 +154,6 @@ export async function login(formData: FormData): Promise<AuthResponse> {
           success: false,
           error: error.issues[0].message
         }
-      }
-
-      // Handle redirect (Next.js throws NEXT_REDIRECT)
-      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
-        throw error
       }
 
       // Generic error with details
@@ -164,8 +165,30 @@ export async function login(formData: FormData): Promise<AuthResponse> {
   }
 
 export async function logout() {
-    const supabase = await createServerSupabaseClient()
-    await supabase.auth.signOut()
-    revalidatePath('/', 'layout')
-    redirect('/login')
+    try {
+      const supabase = await createServerSupabaseClient()
+
+      const { error } = await supabase.auth.signOut()
+
+      if (error) {
+        console.error('Logout error:', error)
+        // Even if signOut fails, we should still clear the client-side session
+        // by redirecting to login
+      }
+
+      revalidatePath('/', 'layout')
+      redirect('/login')
+    } catch (error) {
+      // Handle redirect first (Next.js throws NEXT_REDIRECT) - this is not an error
+      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+        throw error
+      }
+
+      // Now log actual errors
+      console.error('Logout exception:', error)
+
+      // If something goes wrong, still try to redirect to login
+      // This ensures user is logged out on the client side
+      redirect('/login')
+    }
   }
