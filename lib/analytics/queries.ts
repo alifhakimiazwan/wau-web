@@ -11,8 +11,7 @@ interface DateRange {
 }
 
 interface PurchaseEventData {
-  revenue?: number;
-  amount?: number;
+  amount?: number;       // Purchase amount (correct field used in trackPurchase)
   currency?: string;
   customerEmail?: string;
   customerName?: string;
@@ -122,8 +121,8 @@ export async function getStoreAnalytics(
     const totalRevenue = events
       .filter((e) => e.event_type === "purchase")
       .reduce((sum, e) => {
-        const revenue = (e.event_data as PurchaseEventData | null)?.revenue || 0;
-        return sum + revenue;
+        const amount = (e.event_data as PurchaseEventData | null)?.amount || 0;
+        return sum + amount;
       }, 0);
 
     // Top traffic source
@@ -234,8 +233,8 @@ export async function getProductAnalytics(
     const totalRevenue = events
       .filter((e) => e.event_type === "purchase")
       .reduce((sum, e) => {
-        const revenue = (e.event_data as PurchaseEventData | null)?.revenue || 0;
-        return sum + revenue;
+        const amount = (e.event_data as PurchaseEventData | null)?.amount || 0;
+        return sum + amount;
       }, 0);
 
     // Click-through rate (clicks / page views)
@@ -345,7 +344,7 @@ export async function getTrafficSources(
       if (event.event_type === "lead_submit") sourceData.leads++;
       if (event.event_type === "purchase") {
         sourceData.purchases++;
-        sourceData.revenue += (event.event_data as PurchaseEventData | null)?.revenue || 0;
+        sourceData.revenue += (event.event_data as PurchaseEventData | null)?.amount || 0;
       }
     });
 
@@ -423,7 +422,7 @@ export async function getTopProducts(
       if (event.event_type === "product_click") productData.clicks++;
       if (event.event_type === "purchase") {
         productData.conversions++;
-        productData.revenue += (event.event_data as PurchaseEventData | null)?.revenue || 0;
+        productData.revenue += (event.event_data as PurchaseEventData | null)?.amount || 0;
       }
     });
 
@@ -503,8 +502,8 @@ export async function getTimeSeriesData(
       const date = toISODateString(new Date(event.created_at));
 
       if (metric === 'revenue') {
-        const revenue = (event.event_data as PurchaseEventData | null)?.revenue || 0;
-        dailyData.set(date, (dailyData.get(date) || 0) + revenue);
+        const amount = (event.event_data as PurchaseEventData | null)?.amount || 0;
+        dailyData.set(date, (dailyData.get(date) || 0) + amount);
       } else {
         dailyData.set(date, (dailyData.get(date) || 0) + 1);
       }
@@ -555,10 +554,10 @@ export async function getComparisonMetrics(
 
     const currentRevenue = currentData
       .filter((e) => e.event_type === "purchase")
-      .reduce((sum, e) => sum + ((e.event_data as PurchaseEventData | null)?.revenue || 0), 0);
+      .reduce((sum, e) => sum + ((e.event_data as PurchaseEventData | null)?.amount || 0), 0);
     const previousRevenue = previousData
       .filter((e) => e.event_type === "purchase")
-      .reduce((sum, e) => sum + ((e.event_data as PurchaseEventData | null)?.revenue || 0), 0);
+      .reduce((sum, e) => sum + ((e.event_data as PurchaseEventData | null)?.amount || 0), 0);
 
     const currentPurchases = currentData.filter((e) => e.event_type === "purchase").length;
     const previousPurchases = previousData.filter((e) => e.event_type === "purchase").length;

@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TextEffect } from "@/components/ui/text-effect";
@@ -40,67 +41,96 @@ export default function HeroSection() {
           <div className="h-320 -translate-y-87.5 absolute left-0 top-0 w-60 -rotate-45 bg-[radial-gradient(50%_50%_at_50%_50%,hsla(0,0%,85%,.04)_0,hsla(0,0%,45%,.02)_80%,transparent_100%)]" />
         </div>
         <section>
-          <div className="relative pt-24 ">
+          <div className="relative pt-24 pb-16">
             <div className="absolute inset-0 -z-10 size-full [background:radial-gradient(125%_125%_at_50%_100%,transparent_0%,var(--color-background)_75%)]"></div>
             <div className="mx-auto max-w-7xl px-6">
-              <div className="sm:mx-auto lg:mr-auto lg:mt-0">
-                <TextEffect
-                  preset="fade-in-blur"
-                  speedSegment={0.2}
-                  className="mt-8 max-w-2xl text-balance font-serif text-8xl md:text-6xl lg:mt-16"
-                >
-                  Meet Your All-in-One
-                </TextEffect>
-                <TextEffect
-                  preset="fade-in-blur"
-                  speedSegment={0.2}
-                  as="h1"
-                  className="max-w-2xl text-balance text-xl font-regular font-serif md:text-7xl"
-                >
-                  Creator Store
-                </TextEffect>
-                <TextEffect
-                  per="line"
-                  preset="fade-in-blur"
-                  speedSegment={0.3}
-                  delay={0.5}
-                  as="p"
-                  className="mt-4 max-w-md font-sans  text-muted-foreground text-md"
-                >
-                  Wau is the easiest way to make money online. All of your
-                  courses, digital products, and bookings are now hosted within
-                  your link-in-bio.
-                </TextEffect>
+              <div className="grid lg:grid-cols-2 gap-12 items-center">
+                {/* Left side - Text content */}
+                <div className="sm:mx-auto lg:mr-auto lg:mt-0">
+                  <TextEffect
+                    preset="fade-in-blur"
+                    speedSegment={0.2}
+                    className="mt-8 max-w-2xl text-balance font-serif text-4xl sm:text-5xl md:text-6xl lg:text-6xl lg:mt-16"
+                  >
+                    Monetize Instantly
+                  </TextEffect>
+                  <TextEffect
+                    preset="fade-in-blur"
+                    speedSegment={0.2}
+                    as="h1"
+                    className="max-w-2xl text-balance text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-regular font-serif"
+                  >
+                    From Your Bio.
+                  </TextEffect>
+                  <TextEffect
+                    per="line"
+                    preset="fade-in-blur"
+                    speedSegment={0.3}
+                    delay={0.5}
+                    as="p"
+                    className="mt-4 max-w-md font-sans text-muted-foreground text-md"
+                  >
+                    All of your courses, digital products, and bookings are now
+                    hosted within your link-in-bio.
+                  </TextEffect>
 
-                <AnimatedGroup
-                  variants={{
-                    container: {
-                      visible: {
-                        transition: {
-                          staggerChildren: 0.05,
-                          delayChildren: 0.75,
+                  <AnimatedGroup
+                    variants={{
+                      container: {
+                        visible: {
+                          transition: {
+                            staggerChildren: 0.05,
+                            delayChildren: 0.75,
+                          },
                         },
                       },
-                    },
-                    ...transitionVariants,
-                  }}
-                  className="mt-12 flex items-center gap-2"
-                >
-                  <div
-                    key={1}
-                    className="bg-foreground/10 rounded-[calc(var(--radius-xl)+0.125rem)] border p-0.5"
+                      ...transitionVariants,
+                    }}
+                    className="mt-12 flex items-center gap-2"
                   >
-                    <Button
-                      asChild
-                      size="lg"
-                      className="rounded-xl px-5 text-base"
+                    <div
+                      key={1}
+                      className="bg-foreground/10 rounded-[calc(var(--radius-xl)+0.125rem)] border p-0.5"
                     >
-                      <Link href="#link">
-                        <span className="text-nowrap">Start Building</span>
-                      </Link>
-                    </Button>
-                  </div>
-                </AnimatedGroup>
+                      <Button
+                        asChild
+                        size="lg"
+                        className="rounded-xl px-5 text-base"
+                      >
+                        <Link href="#link">
+                          <span className="text-nowrap">Start Building</span>
+                        </Link>
+                      </Button>
+                    </div>
+                  </AnimatedGroup>
+                </div>
+
+                {/* Right side - Hero image */}
+                <div className="relative lg:block hidden">
+                  <AnimatedGroup
+                    variants={{
+                      container: {
+                        visible: {
+                          transition: {
+                            staggerChildren: 0.05,
+                            delayChildren: 0.5,
+                          },
+                        },
+                      },
+                      ...transitionVariants,
+                    }}
+                  >
+                    <div className="relative w-full h-[600px]">
+                      <Image
+                        src="/hero-image.webp"
+                        alt="Creator storefront preview"
+                        fill
+                        className="object-contain"
+                        priority
+                      />
+                    </div>
+                  </AnimatedGroup>
+                </div>
               </div>
             </div>
             {/* <AnimatedGroup

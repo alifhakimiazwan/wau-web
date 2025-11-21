@@ -45,7 +45,9 @@ export const HeroHeader = () => {
                 aria-label="home"
                 className="flex items-center space-x-2"
               >
-                <Image src="/Wau.svg" alt="logo" width={100} height={100} />
+                <Typography variant="h2" font="serif">
+                  heyyy
+                </Typography>
               </Link>
 
               <button

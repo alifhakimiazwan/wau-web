@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useMemo, useCallback, memo } from "react";
-import { useDebouncedCallback } from "use-debounce";
+import { useState, useMemo, useCallback, memo, useTransition } from "react";
+import { fetchAnalyticsData } from "@/lib/analytics/actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, CartesianGrid } from "recharts";
+import { AreaChart, Area, XAxis, CartesianGrid } from "recharts";
 import { DateRangeSelector } from "./date-range-selector";
 import { EmptyState } from "./empty-state";
 import { lineChartConfig } from "@/lib/analytics/chart-configs";
@@ -85,40 +85,25 @@ const ClickableMetricCard = memo(function ClickableMetricCard({
       <CardContent>
         <div className="text-4xl font-bold">{value}</div>
         {hasChange && (
-          <div className="flex items-center gap-1 mt-1 text-xs">
+          <div
+            className={cn(
+              "inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-md text-xs font-medium",
+              isActive
+                ? "bg-primary-foreground/10 text-primary-foreground"
+                : isIncrease
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            )}
+          >
             {isIncrease ? (
               <>
-                <ArrowUp
-                  className={cn(
-                    "h-5 w-5",
-                    isActive ? "text-primary-foreground" : "text-green-600"
-                  )}
-                />
-                <span
-                  className={cn(
-                    "font-medium text-xl",
-                    isActive ? "text-primary-foreground" : "text-green-600"
-                  )}
-                >
-                  +{Math.abs(percentageChange).toFixed(1)}%
-                </span>
+                <ArrowUp className="h-3 w-3" />
+                <span>+{Math.abs(percentageChange).toFixed(1)}%</span>
               </>
             ) : (
               <>
-                <ArrowDown
-                  className={cn(
-                    "h-3 w-3",
-                    isActive ? "text-primary-foreground" : "text-red-600"
-                  )}
-                />
-                <span
-                  className={cn(
-                    "font-medium",
-                    isActive ? "text-primary-foreground" : "text-red-600"
-                  )}
-                >
-                  -{Math.abs(percentageChange).toFixed(1)}%
-                </span>
+                <ArrowDown className="h-3 w-3" />
+                <span>{Math.abs(percentageChange).toFixed(1)}%</span>
               </>
             )}
           </div>
@@ -138,31 +123,78 @@ export function AnalyticsChart({
   const [timeSeriesData, setTimeSeriesData] =
     useState<TimeSeriesData[]>(initialData);
   const [comparisonMetrics, setComparisonMetrics] = useState<ComparisonMetrics>(initialComparisonMetrics);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  const handleDateRangeChange = useDebouncedCallback(
-    async (startDate: Date, endDate: Date) => {
-      setIsLoading(true);
-      try {
-        const { fetchAnalyticsData } = await import('@/lib/analytics/actions');
-        const data = await fetchAnalyticsData(storeId, startDate, endDate, selectedMetric);
+  // Track current date range for metric changes
+  const [currentDateRange, setCurrentDateRange] = useState(() => {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 13); // Default 14 days
+    return { startDate, endDate };
+  });
 
-        setTimeSeriesData(data.timeSeriesData);
-        setComparisonMetrics(data.comparisonMetrics);
+  // Handle metric changes (e.g., switching between views, revenue, leads)
+  const handleMetricChange = useCallback(
+    (metric: MetricType) => {
+      if (metric === selectedMetric) return; // Don't refetch if already selected
 
-        if (onDataUpdate) {
-          onDataUpdate({
-            trafficSources: data.trafficSources,
-            topProducts: data.topProducts,
-          });
+      setSelectedMetric(metric);
+
+      startTransition(async () => {
+        try {
+          const data = await fetchAnalyticsData(
+            storeId,
+            currentDateRange.startDate,
+            currentDateRange.endDate,
+            metric
+          );
+
+          setTimeSeriesData(data.timeSeriesData);
+          setComparisonMetrics(data.comparisonMetrics);
+
+          if (onDataUpdate) {
+            onDataUpdate({
+              trafficSources: data.trafficSources,
+              topProducts: data.topProducts,
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching analytics data for metric:", error);
         }
-      } catch (error) {
-        console.error('Error fetching analytics data:', error);
-      } finally {
-        setIsLoading(false);
-      }
+      });
     },
-    500
+    [selectedMetric, currentDateRange, storeId, onDataUpdate]
+  );
+
+  // Handle date range changes
+  const handleDateRangeChange = useCallback(
+    (startDate: Date, endDate: Date) => {
+      setCurrentDateRange({ startDate, endDate });
+
+      startTransition(async () => {
+        try {
+          const data = await fetchAnalyticsData(
+            storeId,
+            startDate,
+            endDate,
+            selectedMetric
+          );
+
+          setTimeSeriesData(data.timeSeriesData);
+          setComparisonMetrics(data.comparisonMetrics);
+
+          if (onDataUpdate) {
+            onDataUpdate({
+              trafficSources: data.trafficSources,
+              topProducts: data.topProducts,
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching analytics data:", error);
+        }
+      });
+    },
+    [storeId, selectedMetric, onDataUpdate]
   );
 
   const formatTooltipValue = (value: number) => {
@@ -206,7 +238,7 @@ export function AnalyticsChart({
   return (
     <div className="space-y-6">
       <div className="flex justify-end items-center gap-4">
-        {isLoading && (
+        {isPending && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             Loading...
@@ -227,7 +259,7 @@ export function AnalyticsChart({
           isIncrease={comparisonMetrics.visits.isIncrease}
           icon={Eye}
           isActive={selectedMetric === "views"}
-          onClick={() => setSelectedMetric("views")}
+          onClick={() => handleMetricChange("views")}
         />
         <ClickableMetricCard
           label="Total Revenue"
@@ -236,7 +268,7 @@ export function AnalyticsChart({
           isIncrease={comparisonMetrics.revenue.isIncrease}
           icon={DollarSign}
           isActive={selectedMetric === "revenue"}
-          onClick={() => setSelectedMetric("revenue")}
+          onClick={() => handleMetricChange("revenue")}
         />
         <ClickableMetricCard
           label="Leads"
@@ -245,7 +277,7 @@ export function AnalyticsChart({
           isIncrease={comparisonMetrics.leads.isIncrease}
           icon={UserPlus}
           isActive={selectedMetric === "leads"}
-          onClick={() => setSelectedMetric("leads")}
+          onClick={() => handleMetricChange("leads")}
         />
       </div>
 
@@ -264,7 +296,7 @@ export function AnalyticsChart({
               config={lineChartConfig}
               className="h-[300px] w-full"
             >
-              <LineChart
+              <AreaChart
                 accessibilityLayer
                 data={chartData}
                 margin={{
@@ -272,6 +304,20 @@ export function AnalyticsChart({
                   right: 12,
                 }}
               >
+                <defs>
+                  <linearGradient id="fillValue" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-value)"
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-value)"
+                      stopOpacity={0.1}
+                    />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} />
                 <XAxis
                   dataKey="date"
@@ -288,20 +334,15 @@ export function AnalyticsChart({
                     />
                   }
                 />
-                <Line
+                <Area
                   dataKey="value"
                   type="natural"
+                  fill="url(#fillValue)"
+                  fillOpacity={0.4}
                   stroke="var(--color-value)"
                   strokeWidth={2}
-                  dot={{
-                    fill: "var(--color-value)",
-                    r: 4,
-                  }}
-                  activeDot={{
-                    r: 6,
-                  }}
                 />
-              </LineChart>
+              </AreaChart>
             </ChartContainer>
           )}
         </CardContent>

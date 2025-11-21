@@ -29,6 +29,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { User } from "@/types/users";
+import { Typography } from "@/components/ui/typography";
 const data = {
   navMain: [
     {
@@ -140,10 +141,9 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
               className="data-[slot=sidebar-menu-button]:!p-1.5"
             >
               <Link href="/dashboard">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold text-blue-700">
-                  Wau
-                </span>
+                <Typography variant="h5" font="serif" className="pl-3">
+                  heyyy
+                </Typography>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

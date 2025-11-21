@@ -3,7 +3,7 @@ import type { ChartConfig } from '@/components/ui/chart'
 export const lineChartConfig: ChartConfig = {
   value: {
     label: 'Value',
-    color: 'hsl(var(--chart-1))',
+    color: 'hsl(217 91% 60%)', // Blue color
   },
 }
 
